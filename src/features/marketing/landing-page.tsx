@@ -389,69 +389,109 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border bg-surface px-4 py-10 sm:px-6">
-      <div className="mx-auto flex max-w-5xl flex-col gap-8 sm:flex-row sm:justify-between">
+    <footer id="footer" className="border-t border-border bg-surface px-4 py-10 sm:px-6">
+      <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))] sm:gap-6">
         <div className="max-w-xs">
           <Logo />
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">
             صندوق وارد موحّد لتعليقات ورسائل العملاء على منصات التواصل الاجتماعي.
           </p>
+          <div className="mt-5 inline-flex items-center gap-3 rounded-xl border border-border bg-canvas px-3 py-2.5">
+            <img
+              src="/commercial-register.png"
+              alt="شعار السجل التجاري السعودي"
+              className="size-12 shrink-0 object-contain"
+              loading="lazy"
+            />
+            <div>
+              <p className="text-2xs font-medium text-ink-muted">السجل التجاري</p>
+              <p dir="ltr" className="latin mt-0.5 text-sm font-semibold tracking-wide text-ink">
+                7055085414
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-12">
-          <div>
-            <p className="text-2xs font-medium text-ink-faint">المنتج</p>
-            <ul className="mt-2.5 space-y-2">
-              {NAV_LINKS.slice(0, 3).map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="text-xs text-ink-secondary transition-colors hover:text-ink"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-2xs font-medium text-ink-faint">الحساب</p>
-            <ul className="mt-2.5 space-y-2">
-              <li>
-                <Link
-                  to="/login"
-                  className="text-xs text-ink-secondary transition-colors hover:text-ink"
-                >
-                  تسجيل الدخول
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/register"
-                  className="text-xs text-ink-secondary transition-colors hover:text-ink"
-                >
-                  إنشاء حساب
-                </Link>
-              </li>
-              <li>
+        <div>
+          <p className="text-2xs font-medium text-ink-faint">المنتج</p>
+          <ul className="mt-2.5 space-y-2">
+            {NAV_LINKS.slice(0, 3).map((link) => (
+              <li key={link.href}>
                 <a
-                  href="#faq"
+                  href={link.href}
                   className="text-xs text-ink-secondary transition-colors hover:text-ink"
                 >
-                  الأسئلة الشائعة
+                  {link.label}
                 </a>
               </li>
-            </ul>
-          </div>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-2xs font-medium text-ink-faint">الحساب</p>
+          <ul className="mt-2.5 space-y-2">
+            <li>
+              <Link
+                to="/login"
+                className="text-xs text-ink-secondary transition-colors hover:text-ink"
+              >
+                تسجيل الدخول
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/register"
+                className="text-xs text-ink-secondary transition-colors hover:text-ink"
+              >
+                إنشاء حساب
+              </Link>
+            </li>
+            <li>
+              <a
+                href="#faq"
+                className="text-xs text-ink-secondary transition-colors hover:text-ink"
+              >
+                الأسئلة الشائعة
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-2xs font-medium text-ink-faint">السياسات</p>
+          <ul className="mt-2.5 space-y-2">
+            <li>
+              <Link
+                to="/privacy"
+                className="text-xs text-ink-secondary transition-colors hover:text-ink"
+              >
+                سياسة الخصوصية
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terms"
+                className="text-xs text-ink-secondary transition-colors hover:text-ink"
+              >
+                الشروط والأحكام
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/data-deletion"
+                className="text-xs text-ink-secondary transition-colors hover:text-ink"
+              >
+                حذف البيانات
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
 
-      <div className="mx-auto mt-8 max-w-5xl border-t border-border pt-5">
-        <p className="text-2xs text-ink-faint">
-          <span className="latin">Comment</span> — اسم المنتج مبدئي. هذه نسخة قيد التطوير تعمل
-          ببيانات تجريبية.
-        </p>
+      <div className="mx-auto mt-8 flex max-w-5xl flex-col gap-2 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-2xs text-ink-faint">© 2026 <span className="latin">Comment</span>. جميع الحقوق محفوظة.</p>
+        <p className="text-2xs text-ink-faint">السجل التجاري: <span dir="ltr" className="latin">7055085414</span></p>
       </div>
     </footer>
   )

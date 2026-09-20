@@ -20,6 +20,24 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        path: '/privacy',
+        lazy: async () => ({
+          Component: (await import('@/features/legal/legal-page')).PrivacyPage,
+        }),
+      },
+      {
+        path: '/terms',
+        lazy: async () => ({
+          Component: (await import('@/features/legal/legal-page')).TermsPage,
+        }),
+      },
+      {
+        path: '/data-deletion',
+        lazy: async () => ({
+          Component: (await import('@/features/legal/legal-page')).DataDeletionPage,
+        }),
+      },
+      {
         element: <RedirectIfAuthenticated />,
         children: [
           {
