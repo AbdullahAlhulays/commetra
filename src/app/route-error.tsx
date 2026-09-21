@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react'
 import { Link, useRouteError } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { useLocale } from '@/i18n/locale-provider'
 import { toUserMessage } from '@/services'
 
 /**
@@ -10,6 +11,7 @@ import { toUserMessage } from '@/services'
  * sentence and a way out.
  */
 export function RouteError() {
+  const { t } = useLocale()
   const error = useRouteError()
 
   if (import.meta.env.DEV) {
@@ -22,16 +24,16 @@ export function RouteError() {
         <span className="mx-auto mb-4 grid size-10 place-items-center rounded-lg border border-danger-border bg-danger-surface text-danger">
           <AlertTriangle className="size-5" aria-hidden />
         </span>
-        <h1 className="text-xl font-semibold text-ink">حدث خطأ غير متوقع</h1>
+        <h1 className="text-xl font-semibold text-ink">{t.errors.unexpectedTitle}</h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          {toUserMessage(error, 'تعذر عرض هذه الصفحة. حاول تحديث الصفحة أو العودة للصندوق الوارد.')}
+          {toUserMessage(error, t.errors.unexpectedBody)}
         </p>
         <div className="mt-5 flex justify-center gap-2">
           <Button variant="primary" onClick={() => window.location.reload()}>
-            تحديث الصفحة
+            {t.errors.reload}
           </Button>
           <Button variant="secondary" asChild>
-            <Link to="/app/inbox">الصندوق الوارد</Link>
+            <Link to="/app/inbox">{t.errors.inbox}</Link>
           </Button>
         </div>
       </div>

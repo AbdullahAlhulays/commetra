@@ -13,6 +13,20 @@
     />
   </head>
   <body>
+    <script>
+      // Applies the stored language before first paint. Without this, a
+      // returning English visitor sees one RTL frame before React mounts.
+      // The key must match LOCALE_STORAGE_KEY in src/i18n/locale.ts.
+      try {
+        var stored = localStorage.getItem('comment.locale')
+        if (stored === 'en' || stored === 'ar') {
+          document.documentElement.lang = stored
+          document.documentElement.dir = stored === 'en' ? 'ltr' : 'rtl'
+        }
+      } catch (error) {
+        // Storage blocked — the Arabic default in <html> already applies.
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

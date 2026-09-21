@@ -1,10 +1,10 @@
-import { DirectionProvider } from '@radix-ui/react-direction'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, type RenderResult } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { LocaleProvider } from '@/i18n/locale-provider'
 import type { AuthSession } from '@/domain'
 import { resetDb, setMockLatency } from '@/services/mock'
 import { ORG_ID, seedUser } from '@/services/mock/seed-accounts'
@@ -48,11 +48,11 @@ export function renderWithProviders(
 
   const result = render(
     <QueryClientProvider client={queryClient}>
-      <DirectionProvider dir="rtl">
+      <LocaleProvider>
         <TooltipProvider>
           <MemoryRouter initialEntries={[options.route ?? '/']}>{ui}</MemoryRouter>
         </TooltipProvider>
-      </DirectionProvider>
+      </LocaleProvider>
     </QueryClientProvider>,
   )
 

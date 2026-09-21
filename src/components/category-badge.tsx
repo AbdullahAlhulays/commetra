@@ -48,9 +48,16 @@ export function CategoryIcon({
 
 export function CategoryBadge({
   category,
+  label,
   className,
 }: {
   category: InteractionCategory
+  /**
+   * Overrides the Arabic label from the domain. The marketing page is
+   * bilingual and passes the translated one; the app, which is Arabic-only
+   * for now, leaves it off and gets the domain label.
+   */
+  label?: string
   className?: string
 }) {
   const { icon: Icon, tone } = STYLES[category]
@@ -64,7 +71,7 @@ export function CategoryBadge({
       )}
     >
       <Icon className="size-3" aria-hidden />
-      {INTERACTION_CATEGORY_LABELS[category]}
+      {label ?? INTERACTION_CATEGORY_LABELS[category]}
     </span>
   )
 }

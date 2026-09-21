@@ -1,5 +1,5 @@
 import { EyeOff, Inbox, MailOpen, Search, SendHorizonal } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CategoryBadge } from '@/components/category-badge'
 import { AvatarWithPlatform, PlatformChip } from '@/components/platform/platform-chip'
 import {
@@ -15,6 +15,7 @@ import {
   type SocialProvider,
   type WorkflowStatus,
 } from '@/domain'
+import { useLocale } from '@/i18n/locale-provider'
 import { cn } from '@/lib/cn'
 import { useCycledIndex } from './use-cycled-index'
 
@@ -35,23 +36,17 @@ import { useCycledIndex } from './use-cycled-index'
  * assistive tech and a fake inbox would only add noise.
  */
 
-interface MockRow {
+interface RowShape {
   id: string
-  name: string
   provider: SocialProvider
   /** The connected business account that received the interaction. */
   account: string
-  text: string
-  /** Compact form for the list row. */
-  time: string
-  /** Long form for the conversation. */
-  sentAt: string
+  /** Minutes before now, rendered through the dictionary in both forms. */
+  minutes: number
   status: WorkflowStatus
   unread?: boolean
   /** Assigned on arrival, exactly as the product does it. */
   category: InteractionCategory
-  /** The post or video the customer was replying to. */
-  post: string
 }
 
 /**
@@ -61,7 +56,7 @@ interface MockRow {
  * mockup cannot claim a comment was hidden on a network that gives us no way
  * to hide it — TikTok and X rows will never show the badge.
  */
-function isHidden(row: MockRow): boolean {
+function isHidden(row: RowShape): boolean {
   return (
     resolvePublicVisibility(row.category, 'comment', PROVIDER_CAPABILITIES[row.provider]) ===
     'hidden'
@@ -72,90 +67,98 @@ function isHidden(row: MockRow): boolean {
  * Pinned by the product-showcase section, and the fallback the hero starts
  * from — declared on its own so it is statically known to exist.
  */
-const FEATURED_ROW: MockRow = {
-  id: '1',
-  name: 'منيرة القحطاني',
-  provider: 'instagram',
-  account: 'nawah.roastery',
-  text: 'حبوب الإثيوبي المذكورة في الفيديو متوفرة الحين؟ أبي أطلب كيلو.',
-  time: '6 د',
-  sentAt: 'قبل 6 دقائق',
-  status: 'new',
-  unread: true,
-  category: 'sales_intent',
-  post: 'وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.',
-}
-
 /**
- * Ordered newest first, like the real list.
+ * The rows, minus their words.
  *
- * The mix is chosen so the first four rows — the ones above the fold — carry
- * the whole story: a buying question, junk already off the post, a service
- * question, and a complaint that was hidden too.
+ * Names, message text and post excerpts live in the dictionary so the mockup
+ * reads in whichever language the visitor picked. What stays here is the part
+ * that does not translate: which network, which account, how long ago, and
+ * how the classifier filed it.
  */
-const ROWS: MockRow[] = [
-  FEATURED_ROW,
+const ROW_SHAPES: RowShape[] = [
   {
-    id: '2',
-    name: 'متجر المتابعين',
+    id: '1',
     provider: 'instagram',
     account: 'nawah.roastery',
-    text: 'متابعين حقيقيين وتفاعل مضمون بأرخص الأسعار 🔥 تواصل معنا خاص.',
-    time: '9 د',
-    sentAt: 'قبل 9 دقائق',
+    minutes: 6,
+    status: 'new',
+    unread: true,
+    category: 'sales_intent',
+  },
+  {
+    id: '2',
+    provider: 'instagram',
+    account: 'nawah.roastery',
+    minutes: 9,
     status: 'new',
     category: 'spam',
-    post: 'وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.',
   },
   {
     id: '3',
-    name: 'وليد العمري',
     provider: 'tiktok',
     account: 'nawah.coffee',
-    text: 'في خلل في الموقع، ما أقدر أكمل الطلب. تمنيت تشوفونه.',
-    time: '15 د',
-    sentAt: 'قبل 15 دقيقة',
+    minutes: 15,
     status: 'new',
     unread: true,
     category: 'customer_service',
-    post: 'ثلاث خطوات لضبط درجة الطحن قبل تحضير الإسبريسو.',
   },
   {
     id: '4',
-    name: 'نوف الشمري',
     provider: 'facebook',
     account: 'nawah.sa',
-    text: 'الطلب تأخر يومين وما وصلني أي إشعار. هذي ثاني مرة تصير.',
-    time: '28 د',
-    sentAt: 'قبل 28 دقيقة',
+    minutes: 28,
     status: 'new',
     unread: true,
     category: 'negative',
-    post: 'فرع النخيل مفتوح من ٧ صباحًا إلى ١١ مساءً طوال أيام الأسبوع.',
   },
   {
     id: '5',
-    name: 'سلمان الفهد',
     provider: 'x',
     account: 'nawah_sa',
-    text: 'طلبت أمس ووصل اليوم الصباح. سرعة ممتازة 👌',
-    time: '34 د',
-    sentAt: 'قبل 34 دقيقة',
+    minutes: 34,
     status: 'open',
     category: 'other',
-    post: 'الطلبات قبل الساعة ٢ ظهرًا تُشحن في نفس اليوم داخل الرياض.',
   },
 ]
 
+interface MockRowCopy {
+  name: string
+  text: string
+  post: string
+}
+
+type MockRow = RowShape & MockRowCopy
+
+/**
+ * Joins each row's shape to its words in the active language.
+ *
+ * The dictionary is the only thing that changes between locales, so a missing
+ * translation falls back to the first row rather than rendering blank —
+ * a gap in the demo should look like a repeat, not like a broken page.
+ */
+function useRows(): MockRow[] {
+  const { t } = useLocale()
+
+  return useMemo(() => {
+    const [first] = t.mockup.rows
+    return ROW_SHAPES.map((shape, index) => ({
+      ...shape,
+      ...(t.mockup.rows[index] ?? first ?? { name: '', text: '', post: '' }),
+    }))
+  }, [t])
+}
+
 const RAIL_ROWS = [
-  { label: 'الكل', count: 32, icon: Inbox, active: true },
-  { label: 'غير مقروء', count: 13, icon: MailOpen, active: false },
+  { key: 'all' as const, count: 32, icon: Inbox, active: true },
+  { key: 'unread' as const, count: 13, icon: MailOpen, active: false },
 ]
 
 /** Long enough to read the conversation before it moves on. */
 const CYCLE_MS = 4800
 
 function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
+  const { t } = useLocale()
+
   return (
     <div
       className={cn(
@@ -185,7 +188,9 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
             {row.name}
           </span>
           {row.unread ? <span className="size-1.5 shrink-0 rounded-full bg-brand" /> : null}
-          <span className="tabular shrink-0 text-2xs text-ink-faint">{row.time}</span>
+          <span className="tabular shrink-0 text-2xs text-ink-faint">
+            {t.mockup.minutesShort(row.minutes)}
+          </span>
         </div>
 
         <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-muted">{row.text}</p>
@@ -196,7 +201,7 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
           {isHidden(row) ? (
             <span className="flex items-center gap-1 text-ink-secondary">
               <EyeOff className="size-3" />
-              مخفي
+              {t.mockup.hidden}
             </span>
           ) : (
             <span className="latin truncate">@{row.account}</span>
@@ -209,7 +214,8 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
 }
 
 function MockDetail({ row }: { row: MockRow }) {
-  const firstName = row.name.split(' ')[0]
+  const { t } = useLocale()
+  const firstName = row.name.split(' ')[0] ?? row.name
 
   return (
     <div className="flex h-full flex-col bg-canvas">
@@ -237,20 +243,20 @@ function MockDetail({ row }: { row: MockRow }) {
             <div className="flex items-start gap-2 rounded-lg border border-border bg-surface-sunken px-3 py-2.5">
               <EyeOff className="mt-0.5 size-3 shrink-0 text-ink-muted" />
               <p className="text-2xs leading-relaxed text-ink-secondary">
-                أُخفي عن المنشور — لا يراه بقية المتابعين، ويبقى هنا لك.
+                {t.mockup.hiddenNote}
               </p>
             </div>
           ) : null}
 
           <div className="rounded-lg border border-border bg-surface-subtle p-3">
-            <p className="text-2xs font-medium text-ink-muted">المنشور المرتبط</p>
+            <p className="text-2xs font-medium text-ink-muted">{t.mockup.relatedPost}</p>
             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-secondary">
               {row.post}
             </p>
           </div>
 
           <div>
-            <p className="px-0.5 text-2xs text-ink-faint">{row.sentAt}</p>
+            <p className="px-0.5 text-2xs text-ink-faint">{t.mockup.minutesAgo(row.minutes)}</p>
             <div className="mt-1 max-w-[88%] rounded-xl rounded-ss-sm border border-border bg-surface px-3.5 py-2.5 text-sm leading-relaxed text-ink">
               {row.text}
             </div>
@@ -260,10 +266,10 @@ function MockDetail({ row }: { row: MockRow }) {
 
       <div className="border-t border-border bg-surface p-3">
         <div className="rounded-lg border border-border bg-surface">
-          <div className="px-3 py-2.5 text-xs text-ink-faint">اكتب ردك على {firstName}…</div>
+          <div className="px-3 py-2.5 text-xs text-ink-faint">{t.mockup.replyTo(firstName)}</div>
           <div className="flex justify-end border-t border-border-subtle px-2 py-1.5">
             <span className="flex items-center gap-1.5 rounded-md bg-brand-solid px-2.5 py-1.5 text-2xs font-medium text-white">
-              إرسال
+              {t.mockup.send}
               <SendHorizonal className="size-3 rotate-180" />
             </span>
           </div>
@@ -274,9 +280,11 @@ function MockDetail({ row }: { row: MockRow }) {
 }
 
 export function InboxMockup({ className }: { className?: string }) {
+  const { t } = useLocale()
+  const rows = useRows()
   const [paused, setPaused] = useState(false)
-  const selected = useCycledIndex(ROWS.length, { paused, intervalMs: CYCLE_MS })
-  const active = ROWS[selected] ?? FEATURED_ROW
+  const selected = useCycledIndex(rows.length, { paused, intervalMs: CYCLE_MS })
+  const active = rows[selected] ?? rows[0]
 
   return (
     <div
@@ -293,7 +301,7 @@ export function InboxMockup({ className }: { className?: string }) {
         <span className="grid size-5 place-items-center rounded-md bg-brand-solid">
           <span className="size-2 rounded-full bg-white/90" />
         </span>
-        <span className="text-xs font-semibold text-ink">نواة للقهوة المختصة</span>
+        <span className="text-xs font-semibold text-ink">{t.mockup.org}</span>
         <span className="ms-auto flex items-center gap-2">
           <span className="h-5 w-24 rounded-sm border border-border bg-surface-subtle" />
           <span className="size-5 rounded-full bg-surface-sunken" />
@@ -305,7 +313,7 @@ export function InboxMockup({ className }: { className?: string }) {
         <div className="hidden w-40 shrink-0 border-e border-border bg-surface p-2 lg:block">
           {RAIL_ROWS.map((item) => (
             <div
-              key={item.label}
+              key={item.key}
               className={cn(
                 'flex items-center gap-2 rounded-md px-2 py-1.5 text-2xs',
                 item.active ? 'bg-brand-50 font-medium text-brand-700' : 'text-ink-secondary',
@@ -314,12 +322,12 @@ export function InboxMockup({ className }: { className?: string }) {
               <item.icon
                 className={cn('size-3.5', item.active ? 'text-brand-600' : 'text-ink-faint')}
               />
-              {item.label}
+              {t.mockup[item.key]}
               <span className="tabular ms-auto text-ink-faint">{item.count}</span>
             </div>
           ))}
 
-          <p className="px-2 pt-4 pb-1.5 text-2xs font-medium text-ink-faint">المنصات</p>
+          <p className="px-2 pt-4 pb-1.5 text-2xs font-medium text-ink-faint">{t.mockup.platforms}</p>
           {PLATFORM_ORDER.map((provider) => (
             <div
               key={provider}
@@ -336,12 +344,12 @@ export function InboxMockup({ className }: { className?: string }) {
           <div className="flex items-center gap-2 border-b border-border p-2.5">
             <span className="relative flex h-7 flex-1 items-center rounded-md border border-border bg-surface px-2.5">
               <Search className="size-3.5 text-ink-faint" />
-              <span className="ms-2 text-2xs text-ink-faint">ابحث…</span>
+              <span className="ms-2 text-2xs text-ink-faint">{t.mockup.search}</span>
             </span>
           </div>
 
           <div className="min-h-0 flex-1 overflow-hidden">
-            {ROWS.map((row, index) => (
+            {rows.map((row, index) => (
               <MockListRow key={row.id} row={row} selected={index === selected} />
             ))}
           </div>
@@ -352,7 +360,7 @@ export function InboxMockup({ className }: { className?: string }) {
 
         {/* Selected interaction — left column */}
         <div className="hidden min-w-0 flex-1 sm:block">
-          <MockDetail row={active} />
+          {active ? <MockDetail row={active} /> : null}
         </div>
       </div>
     </div>

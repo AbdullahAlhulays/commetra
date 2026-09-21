@@ -12,155 +12,31 @@ import {
 } from '@/components/ui/accordion'
 import { CategoryBadge } from '@/components/category-badge'
 import { Button } from '@/components/ui/button'
-import {
-  INTERACTION_CATEGORIES,
-  INTERACTION_CATEGORY_DESCRIPTIONS,
-  type InteractionCategory,
-} from '@/domain'
+import { INTERACTION_CATEGORIES } from '@/domain'
+import { LanguageSwitcher } from '@/i18n/language-switcher'
+import { useLocale } from '@/i18n/locale-provider'
 import { cn } from '@/lib/cn'
 import { InboxMockup } from './inbox-mockup'
 import { Reveal } from './reveal'
 import { useCycledIndex } from './use-cycled-index'
 
-const NAV_LINKS = [
-  { id: 'how', label: 'كيف تعمل؟' },
-  { id: 'pricing', label: 'الأسعار' },
-  { id: 'faq', label: 'الأسئلة الشائعة' },
-]
-
-const STEPS = [
-  {
-    title: 'اربط حساباتك',
-    body: 'سجّل الدخول لكل منصة مرة واحدة وامنح Comment صلاحية قراءة التعليقات والرسائل.',
-  },
-  {
-    title: 'استقبل كل شيء في مكان واحد',
-    body: 'تصل التعليقات والرسائل الجديدة إلى صندوق وارد واحد، ومع كل تفاعل اسم المنصة والحساب الذي استقبله.',
-  },
-  {
-    title: 'تابع وردّ بدون تنقل',
-    body: 'اقرأ المنشور الذي علّق عليه العميل، ردّ من نفس الشاشة، وعلّم المحادثة كمكتملة حتى لا تتكرر.',
-  },
-]
+/**
+ * Section ids, in page order. Ids are not copy, so they live here rather than
+ * in the dictionary, and `useActiveSection` observes on this stable array.
+ */
+const NAV_SECTION_IDS = ['how', 'pricing', 'faq']
 
 /*
  * !! PLACEHOLDER PRICING — NOT APPROVED.
  *
  * These amounts are stand-ins so the page has a pricing section to lay out.
- * No plan, price or limit here has been signed off, and every one of them
- * must be replaced with the real commercial terms before this page is shown
- * to customers. The feature lists are real — they describe capabilities the
- * product actually has — but which tier each one belongs to is a guess.
+ * No plan, price or limit has been signed off, and every one of them must be
+ * replaced with the real commercial terms before this page is shown to
+ * customers. They sit here rather than in the dictionary because an amount is
+ * not copy — it does not change between languages.
  */
-const PLANS = [
-  {
-    name: 'تجربة مجانية',
-    price: '$0',
-    period: '١٤ يومًا',
-    summary: 'جرّب كل شيء قبل أن تدفع.',
-    featured: false,
-    features: [
-      'المنصات الأربع كاملة',
-      'حساب واحد لكل منصة',
-      'تصنيف تلقائي لكل تفاعل',
-      'مستخدم واحد',
-      'بدون بطاقة ائتمانية',
-    ],
-  },
-  {
-    name: 'أساسي',
-    price: '$19',
-    period: 'شهريًا',
-    summary: 'لمتجر يديره شخص أو شخصان.',
-    featured: false,
-    features: [
-      'كل ما في التجربة المجانية',
-      'حسابان لكل منصة',
-      'ثلاثة مستخدمين',
-      'إخفاء السلبي والسبام',
-      'بحث وتصفية كاملة',
-    ],
-  },
-  {
-    name: 'احترافي',
-    price: '$50',
-    period: 'شهريًا',
-    summary: 'لفريق يتابع عدة حسابات.',
-    featured: true,
-    features: [
-      'كل ما في الأساسي',
-      'حسابات غير محدودة',
-      'عشرة مستخدمين',
-      'تقارير وحالات متابعة',
-      'دعم بأولوية',
-    ],
-  },
-]
-
-const FAQ = [
-  {
-    question: 'ما المنصات المدعومة؟',
-    answer:
-      'Instagram و Facebook و TikTok و X في هذه النسخة. نضيف منصات أخرى بحسب ما تحتاجه المتاجر فعليًا.',
-  },
-  {
-    question: 'هل يمكن الرد من داخل المنصة؟',
-    answer:
-      'نعم، في الحالات التي تتيحها واجهة المنصة نفسها. الصلاحيات تختلف بين المنصات وبحسب نوع الحساب ومستوى الوصول، ولذلك يعرض Comment قبل الربط ما الذي تتيحه كل منصة وما لا تتيحه.',
-  },
-  {
-    question: 'ماذا يحدث إذا كانت منصة لا تدعم ميزة معينة؟',
-    answer:
-      'لا نعرض زرًا لا يعمل. إذا كان الرد غير متاح، يُستبدل صندوق الرد بشرح مختصر للسبب، ويبقى التفاعل مقروءًا وقابلاً للمتابعة وتغيير حالته.',
-  },
-  {
-    question: 'ماذا يحدث للتعليقات السلبية والسبام؟',
-    answer:
-      'تُصنَّف تلقائيًا وتُخفى عن المنشور على Instagram و Facebook، فلا يراها بقية المتابعين، وتبقى في صندوقك لتقرأها وترد عليها متى شئت. على TikTok و X نصنّفها ونعلّمها لك بوضوح، لأن المنصتين لا تتيحان إخفاء التعليقات من خارج تطبيقهما.',
-  },
-  {
-    question: 'هل بيانات الحسابات آمنة؟',
-    answer:
-      'مفاتيح الوصول تُحفظ في الخادم ولا تصل إلى المتصفح. يمكنك إلغاء ربط أي حساب في أي وقت، ويتوقف الوصول وتُزال تفاعلاته من الصندوق.',
-  },
-  {
-    question: 'هل المنصة مناسبة لحجم نشاطي؟',
-    answer:
-      'نعم، مهما كان حجمه. تعمل مع متجر يديره شخص واحد ومع فريق خدمة عملاء كامل، والتفاعلات الجديدة تصل إلى الصندوق لحظة وصولها مهما كان عددها.',
-  },
-]
-
-/** Stable identity: `useActiveSection` observes on this list, so it must not
- *  be rebuilt on every render. */
-const NAV_SECTION_IDS = NAV_LINKS.map((link) => link.id)
-
-/**
- * The before/after comparison. Each pair is one row of the same problem, so
- * the two columns stay aligned line for line; every "after" is a capability
- * that exists in the product today, not a roadmap item.
- */
-const TRANSFORMATION = [
-  {
-    before: 'تنقّل بين أربعة تطبيقات طوال اليوم',
-    after: 'صندوق وارد واحد لكل المنصات',
-  },
-  {
-    before: 'تقرأ مئة تعليق لتجد سؤال شراء واحد',
-    after: 'كل تفاعل مصنّف قبل أن تفتحه',
-  },
-  {
-    before: 'تعليق مسيء يبقى تحت منشورك أمام الجميع',
-    after: 'السلبي والسبام يُخفى عن المنشور تلقائيًا',
-  },
-  {
-    before: 'ترد على تعليق دون أن تعرف من أي منشور جاء',
-    after: 'المنشور أو الفيديو أمامك وأنت تكتب الرد',
-  },
-  {
-    before: 'تعليق يمر بلا رد ولا أحد ينتبه',
-    after: 'كل تفاعل له حالة حتى يُغلق',
-  },
-]
+const PLAN_PRICES = ['$0', '$19', '$50']
+const FEATURED_PLAN_INDEX = 2
 
 /**
  * Tracks which section the visitor is reading, for the navbar.
@@ -210,8 +86,14 @@ function useIsScrolled(): boolean {
 }
 
 function Navbar() {
+  const { t } = useLocale()
   const active = useActiveSection(NAV_SECTION_IDS)
   const scrolled = useIsScrolled()
+  const links = [
+    { id: 'how', label: t.nav.how },
+    { id: 'pricing', label: t.nav.pricing },
+    { id: 'faq', label: t.nav.faq },
+  ]
 
   return (
     <header
@@ -225,8 +107,8 @@ function Navbar() {
           <Logo />
         </Link>
 
-        <nav className="mx-auto hidden items-center gap-1 md:flex" aria-label="روابط الصفحة">
-          {NAV_LINKS.map((link) => (
+        <nav className="mx-auto hidden items-center gap-1 md:flex" aria-label={t.nav.sections}>
+          {links.map((link) => (
             <a
               key={link.id}
               href={`#${link.id}`}
@@ -242,11 +124,12 @@ function Navbar() {
         </nav>
 
         <div className="ms-auto flex items-center gap-2 md:ms-0">
+          <LanguageSwitcher className="hidden sm:inline-flex" />
           <Button variant="ghost" size="md" asChild>
-            <Link to="/login">تسجيل الدخول</Link>
+            <Link to="/login">{t.nav.login}</Link>
           </Button>
           <Button variant="primary" size="md" asChild>
-            <Link to="/register">ابدأ مجانًا</Link>
+            <Link to="/register">{t.nav.signup}</Link>
           </Button>
         </div>
       </div>
@@ -255,27 +138,29 @@ function Navbar() {
 }
 
 function Hero() {
+  const { t } = useLocale()
+
   return (
     <section className="px-4 pt-14 pb-10 sm:px-6 sm:pt-20">
       <div className="mx-auto max-w-3xl text-center">
         <Reveal>
           <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
-            كل تعليقات ورسائل عملائك في مكان واحد
+            {t.hero.title}
           </h1>
         </Reveal>
 
         <Reveal delay={80}>
           <p className="mx-auto mt-4 max-w-xl text-md leading-relaxed text-ink-secondary sm:text-lg">
-            كل تعليق ورسالة من Instagram و Facebook و TikTok و X في صندوق واحد، مصنّفة لك تلقائيًا.
+            {t.hero.body}
           </p>
         </Reveal>
 
         <Reveal delay={160} className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
           <Button variant="primary" size="lg" asChild>
-            <Link to="/register">ابدأ مجانًا</Link>
+            <Link to="/register">{t.nav.signup}</Link>
           </Button>
           <Button variant="secondary" size="lg" asChild>
-            <a href="#how">شاهد كيف تعمل</a>
+            <a href="#how">{t.hero.secondary}</a>
           </Button>
         </Reveal>
       </div>
@@ -288,6 +173,8 @@ function Hero() {
 }
 
 function Channels() {
+  const { t } = useLocale()
+
   return (
     <section
       id="channels"
@@ -296,10 +183,10 @@ function Channels() {
       <div className="mx-auto max-w-5xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            كل قنوات التواصل في مكان واحد
+            {t.channels.title}
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-ink-secondary">
-            استقبل تعليقات ورسائل عملائك من كل منصة في صندوق وارد واحد لفريقك.
+            {t.channels.body}
           </p>
         </Reveal>
 
@@ -328,7 +215,7 @@ function Channels() {
           className="mt-6 rounded-xl border border-brand-200 bg-brand-50 px-6 py-4 text-center"
         >
           <p className="text-sm font-medium text-brand-800">
-            صندوق وارد واحد لكل هذه القنوات — فريقك يرد من مكان واحد.
+            {t.channels.strip}
           </p>
         </Reveal>
       </div>
@@ -336,24 +223,10 @@ function Channels() {
   )
 }
 
-/**
- * One real-looking comment per category.
- *
- * The section shows the classifier working on an actual comment rather than
- * describing it in the abstract, which is the whole difference between a
- * feature list and understanding what the product does.
- */
-const CATEGORY_SAMPLES: Record<InteractionCategory, string> = {
-  sales_intent: 'حبوب الإثيوبي متوفرة الحين؟ أبي أطلب كيلو.',
-  customer_service: 'في خلل في الموقع، ما أقدر أكمل الطلب.',
-  negative: 'الطلب تأخر يومين وما وصلني أي إشعار.',
-  spam: 'متابعين حقيقيين بأرخص الأسعار 🔥 تواصل خاص.',
-  other: 'القهوة وصلت اليوم والرائحة خيالية 🤎 شكرًا لكم.',
-}
-
 const CATEGORY_CYCLE_MS = 2600
 
 function Categories() {
+  const { t } = useLocale()
   const [paused, setPaused] = useState(false)
   const activeIndex = useCycledIndex(INTERACTION_CATEGORIES.length, {
     paused,
@@ -366,7 +239,7 @@ function Categories() {
       <div className="mx-auto max-w-2xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            كل تعليق يُصنَّف قبل أن تفتحه
+            {t.categories.title}
           </h2>
         </Reveal>
 
@@ -374,12 +247,12 @@ function Categories() {
           {/* Hovering means someone is reading a specific row — hold the cycle. */}
           <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
             <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
-              <p className="text-2xs font-medium text-ink-faint">تعليق جديد وصل الآن</p>
+              <p className="text-2xs font-medium text-ink-faint">{t.categories.incoming}</p>
               <p
                 key={active}
                 className="mt-1.5 text-sm leading-relaxed text-ink motion-safe:animate-content-in"
               >
-                {CATEGORY_SAMPLES[active]}
+                {t.categories.samples[active]}
               </p>
             </div>
 
@@ -406,10 +279,10 @@ function Categories() {
                       aria-hidden
                     />
                     <span className="shrink-0 sm:w-28">
-                      <CategoryBadge category={category} />
+                      <CategoryBadge category={category} label={t.categories.labels[category]} />
                     </span>
                     <p className="text-sm leading-relaxed text-ink-secondary">
-                      {INTERACTION_CATEGORY_DESCRIPTIONS[category]}
+                      {t.categories.descriptions[category]}
                     </p>
                   </li>
                 )
@@ -429,11 +302,10 @@ function Categories() {
           </span>
           <div>
             <h3 className="text-md font-semibold text-danger-strong">
-              السلبي والسبام يختفي عن منشورك، لا عن صندوقك
+              {t.categories.hiding.title}
             </h3>
             <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">
-              تُخفى عن المنشور تلقائيًا فلا يراها بقية المتابعين، وتبقى عندك تقرأها وترد عليها متى
-              شئت.
+              {t.categories.hiding.body}
             </p>
           </div>
         </Reveal>
@@ -443,17 +315,19 @@ function Categories() {
 }
 
 function HowItWorks() {
+  const { t } = useLocale()
+
   return (
     <section id="how" className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <Reveal>
           <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
-            ثلاث خطوات من الربط إلى أول رد
+            {t.steps.title}
           </h2>
         </Reveal>
 
         <Reveal as="ol" mode="children" className="group mt-8 grid gap-8 md:grid-cols-3 md:gap-6">
-          {STEPS.map((step, index) => (
+          {t.steps.items.map((step, index) => (
             <li key={step.title} className="relative md:pt-5">
               {/* Hairline connector, not a row of boxes. */}
               {/* Drawn from the inline start, so in RTL it runs right to left
@@ -483,12 +357,14 @@ function HowItWorks() {
 }
 
 function BeforeAfter() {
+  const { t } = useLocale()
+
   return (
     <section className="px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            من الفوضى إلى صندوق واحد منظّم
+            {t.comparison.title}
           </h2>
         </Reveal>
 
@@ -496,9 +372,9 @@ function BeforeAfter() {
             the arrow points left, toward the outcome. */}
         <div className="mt-10 grid items-start gap-6 md:grid-cols-[1fr_auto_1fr] md:gap-5">
           <Reveal>
-            <h3 className="mb-3 text-sm font-semibold text-ink-muted">الوضع اليوم</h3>
+            <h3 className="mb-3 text-sm font-semibold text-ink-muted">{t.comparison.today}</h3>
             <ul className="space-y-2.5">
-              {TRANSFORMATION.map((item) => (
+              {t.comparison.items.map((item) => (
                 <li
                   key={item.before}
                   className="flex items-start gap-2.5 rounded-lg border border-danger-border bg-danger-surface px-3.5 py-3"
@@ -519,10 +395,10 @@ function BeforeAfter() {
 
           <Reveal delay={120}>
             <h3 className="mb-3 text-sm font-semibold text-ink">
-              مع <span className="latin">Comment</span>
+              {t.comparison.withProduct} <span className="latin">Comment</span>
             </h3>
             <ul className="space-y-2.5">
-              {TRANSFORMATION.map((item) => (
+              {t.comparison.items.map((item) => (
                 <li
                   key={item.after}
                   className="flex items-start gap-2.5 rounded-lg border border-success-border bg-success-surface px-3.5 py-3"
@@ -540,6 +416,8 @@ function BeforeAfter() {
 }
 
 function Pricing() {
+  const { t } = useLocale()
+
   return (
     <section
       id="pricing"
@@ -548,24 +426,26 @@ function Pricing() {
       <div className="mx-auto max-w-5xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            خطة تناسب حجم نشاطك
+            {t.pricing.title}
           </h2>
         </Reveal>
 
         <Reveal as="ul" mode="children" className="mt-10 grid gap-4 lg:grid-cols-3">
-          {PLANS.map((plan) => (
+          {t.pricing.plans.map((plan, index) => (
             <li
               key={plan.name}
               className={cn(
                 'group flex flex-col rounded-xl border bg-canvas p-6 transition-[transform,box-shadow,border-color] duration-200 hover:shadow-md motion-safe:hover:-translate-y-1',
-                plan.featured ? 'border-brand-300 shadow-sm' : 'border-border hover:border-brand-300',
+                index === FEATURED_PLAN_INDEX
+                  ? 'border-brand-300 shadow-sm'
+                  : 'border-border hover:border-brand-300',
               )}
             >
               <div className="flex items-center gap-2">
                 <h3 className="text-md font-semibold text-ink">{plan.name}</h3>
-                {plan.featured ? (
+                {index === FEATURED_PLAN_INDEX ? (
                   <span className="rounded-sm border border-brand-200 bg-brand-50 px-1.5 py-0.5 text-2xs font-medium text-brand-700">
-                    الأكثر اختيارًا
+                    {t.pricing.popular}
                   </span>
                 ) : null}
               </div>
@@ -574,7 +454,7 @@ function Pricing() {
 
               <p className="mt-5 flex items-baseline gap-2">
                 <span className="tabular text-3xl font-semibold tracking-tight text-ink">
-                  {plan.price}
+                  {PLAN_PRICES[index]}
                 </span>
                 <span className="text-xs text-ink-muted">{plan.period}</span>
               </p>
@@ -589,12 +469,12 @@ function Pricing() {
               </ul>
 
               <Button
-                variant={plan.featured ? 'primary' : 'secondary'}
+                variant={index === FEATURED_PLAN_INDEX ? 'primary' : 'secondary'}
                 size="md"
                 className="mt-6 w-full"
                 asChild
               >
-                <Link to="/register">ابدأ مجانًا</Link>
+                <Link to="/register">{t.pricing.cta}</Link>
               </Button>
             </li>
           ))}
@@ -602,7 +482,7 @@ function Pricing() {
 
         <Reveal delay={140}>
           <p className="mt-6 text-center text-xs text-ink-muted">
-            كل الخطط تبدأ بتجربة مجانية، ويمكنك الإلغاء في أي وقت.
+            {t.pricing.note}
           </p>
         </Reveal>
       </div>
@@ -611,16 +491,18 @@ function Pricing() {
 }
 
 function Faq() {
+  const { t } = useLocale()
+
   return (
     <section id="faq" className="scroll-mt-24 px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-2xl">
         <Reveal>
-          <h2 className="text-2xl font-semibold tracking-tight text-ink">الأسئلة الشائعة</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-ink">{t.faq.title}</h2>
         </Reveal>
 
         <Reveal delay={80}>
           <Accordion type="single" collapsible className="mt-6 border-t border-border">
-            {FAQ.map((item, index) => (
+            {t.faq.items.map((item, index) => (
               <AccordionItem key={item.question} value={`faq-${index}`}>
                 <AccordionTrigger>{item.question}</AccordionTrigger>
                 <AccordionContent>{item.answer}</AccordionContent>
@@ -634,18 +516,20 @@ function Faq() {
 }
 
 function FinalCta() {
+  const { t } = useLocale()
+
   return (
     <section className="px-4 pb-16 sm:px-6">
       <Reveal className="mx-auto max-w-5xl rounded-2xl bg-surface-inverse px-6 py-12 text-center sm:px-12">
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          ابدأ بجمع تفاعلاتك في مكان واحد
+          {t.finalCta.title}
         </h2>
         <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate-300">
-          أنشئ حسابًا وجرّب الصندوق الوارد على بيانات تجريبية قبل ربط أي حساب حقيقي.
+          {t.finalCta.body}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2.5">
           <Button variant="primary" size="lg" asChild>
-            <Link to="/register">ابدأ مجانًا</Link>
+            <Link to="/register">{t.nav.signup}</Link>
           </Button>
           <Button
             size="lg"
@@ -653,7 +537,7 @@ function FinalCta() {
             className="border-white/20 bg-transparent text-white hover:border-white/40 hover:bg-white/10"
             asChild
           >
-            <Link to="/login">تسجيل الدخول</Link>
+            <Link to="/login">{t.nav.login}</Link>
           </Button>
         </div>
       </Reveal>
@@ -662,23 +546,30 @@ function FinalCta() {
 }
 
 function Footer() {
+  const { t } = useLocale()
+  const links = [
+    { id: 'how', label: t.nav.how },
+    { id: 'pricing', label: t.nav.pricing },
+    { id: 'faq', label: t.nav.faq },
+  ]
+
   return (
     <footer id="footer" className="border-t border-border bg-surface px-4 py-10 sm:px-6">
       <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))] sm:gap-6">
         <div className="max-w-xs">
           <Logo />
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">
-            صندوق وارد موحّد لتعليقات ورسائل العملاء على منصات التواصل الاجتماعي.
+            {t.footer.tagline}
           </p>
           <div className="mt-5 inline-flex items-center gap-3 rounded-xl border border-border bg-canvas px-3 py-2.5">
             <img
               src="/commercial-register.png"
-              alt="شعار السجل التجاري السعودي"
+              alt={t.footer.commercialRegisterAlt}
               className="size-12 shrink-0 object-contain"
               loading="lazy"
             />
             <div>
-              <p className="text-2xs font-medium text-ink-muted">السجل التجاري</p>
+              <p className="text-2xs font-medium text-ink-muted">{t.footer.commercialRegister}</p>
               <p dir="ltr" className="latin mt-0.5 text-sm font-semibold tracking-wide text-ink">
                 7055085414
               </p>
@@ -687,9 +578,9 @@ function Footer() {
         </div>
 
         <div>
-          <p className="text-2xs font-medium text-ink-faint">المنتج</p>
+          <p className="text-2xs font-medium text-ink-faint">{t.footer.product}</p>
           <ul className="mt-2.5 space-y-2">
-            {NAV_LINKS.slice(0, 3).map((link) => (
+            {links.map((link) => (
               <li key={link.id}>
                 <a
                   href={`#${link.id}`}
@@ -703,14 +594,14 @@ function Footer() {
         </div>
 
         <div>
-          <p className="text-2xs font-medium text-ink-faint">الحساب</p>
+          <p className="text-2xs font-medium text-ink-faint">{t.footer.account}</p>
           <ul className="mt-2.5 space-y-2">
             <li>
               <Link
                 to="/login"
                 className="text-xs text-ink-secondary transition-colors hover:text-ink"
               >
-                تسجيل الدخول
+                {t.nav.login}
               </Link>
             </li>
             <li>
@@ -718,7 +609,7 @@ function Footer() {
                 to="/register"
                 className="text-xs text-ink-secondary transition-colors hover:text-ink"
               >
-                إنشاء حساب
+                {t.footer.signup}
               </Link>
             </li>
             <li>
@@ -726,21 +617,21 @@ function Footer() {
                 href="#faq"
                 className="text-xs text-ink-secondary transition-colors hover:text-ink"
               >
-                الأسئلة الشائعة
+                {t.nav.faq}
               </a>
             </li>
           </ul>
         </div>
 
         <div>
-          <p className="text-2xs font-medium text-ink-faint">السياسات</p>
+          <p className="text-2xs font-medium text-ink-faint">{t.footer.policies}</p>
           <ul className="mt-2.5 space-y-2">
             <li>
               <Link
                 to="/privacy"
                 className="text-xs text-ink-secondary transition-colors hover:text-ink"
               >
-                سياسة الخصوصية
+                {t.footer.privacy}
               </Link>
             </li>
             <li>
@@ -748,7 +639,7 @@ function Footer() {
                 to="/terms"
                 className="text-xs text-ink-secondary transition-colors hover:text-ink"
               >
-                الشروط والأحكام
+                {t.footer.terms}
               </Link>
             </li>
             <li>
@@ -756,16 +647,27 @@ function Footer() {
                 to="/data-deletion"
                 className="text-xs text-ink-secondary transition-colors hover:text-ink"
               >
-                حذف البيانات
+                {t.footer.dataDeletion}
               </Link>
             </li>
           </ul>
         </div>
       </div>
 
-      <div className="mx-auto mt-8 flex max-w-5xl flex-col gap-2 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-2xs text-ink-faint">© 2026 <span className="latin">Comment</span>. جميع الحقوق محفوظة.</p>
-        <p className="text-2xs text-ink-faint">السجل التجاري: <span dir="ltr" className="latin">7055085414</span></p>
+      <div className="mx-auto mt-8 max-w-5xl border-t border-border pt-5">
+        <LanguageSwitcher className="mb-4 sm:hidden" />
+      </div>
+
+      <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-2xs text-ink-faint">
+          © 2026 <span className="latin">Comment</span>. {t.footer.rights}
+        </p>
+        <p className="text-2xs text-ink-faint">
+          {t.footer.commercialRegister}:{' '}
+          <span dir="ltr" className="latin">
+            7055085414
+          </span>
+        </p>
       </div>
     </footer>
   )
