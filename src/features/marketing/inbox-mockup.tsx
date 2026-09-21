@@ -273,21 +273,6 @@ function MockDetail({ row }: { row: MockRow }) {
   )
 }
 
-/** The detail pane on its own, for the product-showcase section. */
-export function DetailMockup({ className }: { className?: string }) {
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        'h-[23rem] overflow-hidden rounded-xl border border-border bg-surface shadow-lg',
-        className,
-      )}
-    >
-      <MockDetail row={FEATURED_ROW} />
-    </div>
-  )
-}
-
 export function InboxMockup({ className }: { className?: string }) {
   const [paused, setPaused] = useState(false)
   const selected = useCycledIndex(ROWS.length, { paused, intervalMs: CYCLE_MS })

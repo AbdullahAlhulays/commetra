@@ -5,15 +5,8 @@ import {
   Check,
   Coffee,
   EyeOff,
-  FileText,
-  Inbox,
-  Link2,
-  ListChecks,
-  ScanLine,
-  Search,
   ShoppingCart,
   Store,
-  Tags,
   Users,
   X as CrossIcon,
 } from 'lucide-react'
@@ -36,13 +29,12 @@ import {
   type InteractionCategory,
 } from '@/domain'
 import { cn } from '@/lib/cn'
-import { DetailMockup, InboxMockup } from './inbox-mockup'
+import { InboxMockup } from './inbox-mockup'
 import { Reveal } from './reveal'
 import { useCycledIndex } from './use-cycled-index'
 
 const NAV_LINKS = [
   { id: 'how', label: 'كيف تعمل؟' },
-  { id: 'features', label: 'المميزات' },
   { id: 'use-cases', label: 'حالات الاستخدام' },
   { id: 'faq', label: 'الأسئلة الشائعة' },
 ]
@@ -59,49 +51,6 @@ const STEPS = [
   {
     title: 'تابع وردّ بدون تنقل',
     body: 'اقرأ المنشور الذي علّق عليه العميل، ردّ من نفس الشاشة، وعلّم المحادثة كمكتملة حتى لا تتكرر.',
-  },
-]
-
-const FEATURES = [
-  {
-    icon: Inbox,
-    title: 'صندوق وارد موحّد',
-    body: 'كل ما يصل حساباتك على المنصات الأربع يظهر في قائمة واحدة.',
-  },
-  {
-    icon: ScanLine,
-    title: 'تمييز فوري للمنصة',
-    body: 'شعار المنصة على صورة كل عميل، فتعرف المصدر دون قراءة النص.',
-  },
-  {
-    icon: Search,
-    title: 'بحث وتصفية سريعة',
-    body: 'صفِّ حسب المنصة أو الحساب أو الحالة، وابحث في نص التفاعلات وأسماء العملاء.',
-  },
-  {
-    icon: FileText,
-    title: 'سياق المنشور',
-    body: 'ترى المنشور أو الفيديو الذي جاء منه التعليق قبل أن تكتب ردك.',
-  },
-  {
-    icon: ListChecks,
-    title: 'متابعة حالة كل تفاعل',
-    body: 'جديد، مفتوح، بانتظار، تم الحل — لتعرف ما الذي ما زال ينتظر ردًا.',
-  },
-  {
-    icon: Tags,
-    title: 'تصنيف تلقائي لكل تفاعل',
-    body: 'فرصة بيع، خدمة عملاء، تعليق سلبي، إزعاج — قبل أن تفتحه.',
-  },
-  {
-    icon: EyeOff,
-    title: 'إخفاء السلبي والسبام',
-    body: 'يختفي عن منشورك على المنصات التي تتيح ذلك، ويبقى في صندوقك.',
-  },
-  {
-    icon: Link2,
-    title: 'عدة حسابات لكل منصة',
-    body: 'اربط أكثر من حساب، مع تنبيه عند انتهاء صلاحية أي ربط.',
   },
 ]
 
@@ -311,7 +260,7 @@ function Hero() {
             <Link to="/register">ابدأ مجانًا</Link>
           </Button>
           <Button variant="secondary" size="lg" asChild>
-            <a href="#product">شاهد الصندوق الوارد</a>
+            <a href="#how">شاهد كيف تعمل</a>
           </Button>
         </Reveal>
       </div>
@@ -404,9 +353,6 @@ function Categories() {
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
             كل تعليق يُصنَّف قبل أن تفتحه
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-ink-secondary">
-            فتعرف من أول نظرة ما الذي يستحق ردًا الآن.
-          </p>
         </Reveal>
 
         <Reveal delay={80} className="mt-10">
@@ -521,58 +467,14 @@ function HowItWorks() {
   )
 }
 
-function ProductShowcase() {
-  return (
-    <section id="product" className="scroll-mt-24 px-4 py-16 sm:px-6">
-      <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
-        <Reveal>
-          <h2 className="text-2xl font-semibold tracking-tight text-ink">
-            تعرف ما الذي يرد عليه العميل قبل أن تكتب
-          </h2>
-          <dl className="mt-6 space-y-4 border-t border-border pt-6">
-            <div>
-              <dt className="text-sm font-medium text-ink">سياق المنشور مرفق دائمًا</dt>
-              <dd className="mt-1 text-sm leading-relaxed text-ink-muted">
-                نص المنشور وصورته أو مدة الفيديو، أمام عينك وأنت تكتب.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-ink">ردّ أسرع من نفس الشاشة</dt>
-              <dd className="mt-1 text-sm leading-relaxed text-ink-muted">
-                اكتب ردك وأرسله مباشرة من المحادثة، مع حالة إرسال واضحة وإعادة محاولة إذا رفضت
-                المنصة الرد.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-ink">
-                كل التعليقات من كل المنصات في قائمة واحدة
-              </dt>
-              <dd className="mt-1 text-sm leading-relaxed text-ink-muted">
-                مرتبة بالأحدث، ومع كل تفاعل حسابه وحالته، فلا يضيع تعليق ولا يبقى بلا رد.
-              </dd>
-            </div>
-          </dl>
-        </Reveal>
-
-        <Reveal delay={100}>
-          <DetailMockup />
-        </Reveal>
-      </div>
-    </section>
-  )
-}
-
 function BeforeAfter() {
   return (
-    <section className="border-y border-border bg-surface px-4 py-16 sm:px-6">
+    <section className="px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
             من الفوضى إلى صندوق واحد منظّم
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-ink-secondary">
-            الفرق بين متابعة أربع منصات يدويًا ومتابعتها كلها من مكان واحد.
-          </p>
         </Reveal>
 
         {/* Problems first: in RTL that puts them in the right-hand column, and
@@ -617,42 +519,6 @@ function BeforeAfter() {
             </ul>
           </Reveal>
         </div>
-      </div>
-    </section>
-  )
-}
-
-function Features() {
-  return (
-    <section id="features" className="scroll-mt-24 px-4 py-16 sm:px-6">
-      <div className="mx-auto max-w-5xl">
-        <Reveal>
-          <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
-            ما الذي يقدّمه Comment
-          </h2>
-        </Reveal>
-
-        {/* Revealed as one block: the cells are hairline-separated inside a
-            clipped frame, so sliding them individually would show the gaps. */}
-        <Reveal delay={80}>
-          <ul className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
-            {FEATURES.map((feature) => (
-              <li
-                key={feature.title}
-                className="group flex gap-3 bg-surface p-5 transition-colors duration-200 hover:bg-surface-subtle"
-              >
-                <feature.icon
-                  className="mt-0.5 size-4 shrink-0 text-brand-600 transition-transform duration-200 motion-safe:group-hover:scale-125"
-                  aria-hidden
-                />
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-ink">{feature.title}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-ink-muted">{feature.body}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Reveal>
       </div>
     </section>
   )
@@ -864,9 +730,7 @@ export function LandingPage() {
         <Channels />
         <Categories />
         <HowItWorks />
-        <ProductShowcase />
         <BeforeAfter />
-        <Features />
         <UseCases />
         <Faq />
         <FinalCta />
