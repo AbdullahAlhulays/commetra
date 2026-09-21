@@ -1,15 +1,4 @@
-import {
-  ArrowDown,
-  ArrowLeft,
-  BarChart3,
-  Check,
-  Coffee,
-  EyeOff,
-  ShoppingCart,
-  Store,
-  Users,
-  X as CrossIcon,
-} from 'lucide-react'
+import { ArrowDown, ArrowLeft, Check, EyeOff, X as CrossIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/brand/logo'
@@ -35,7 +24,6 @@ import { useCycledIndex } from './use-cycled-index'
 
 const NAV_LINKS = [
   { id: 'how', label: 'كيف تعمل؟' },
-  { id: 'use-cases', label: 'حالات الاستخدام' },
   { id: 'pricing', label: 'الأسعار' },
   { id: 'faq', label: 'الأسئلة الشائعة' },
 ]
@@ -52,34 +40,6 @@ const STEPS = [
   {
     title: 'تابع وردّ بدون تنقل',
     body: 'اقرأ المنشور الذي علّق عليه العميل، ردّ من نفس الشاشة، وعلّم المحادثة كمكتملة حتى لا تتكرر.',
-  },
-]
-
-const USE_CASES = [
-  {
-    icon: ShoppingCart,
-    title: 'متجر إلكتروني',
-    body: 'أسئلة التوفر والمقاسات والشحن تصلك في مكان واحد بدل التنقل بين ثلاثة تطبيقات.',
-  },
-  {
-    icon: Store,
-    title: 'متجر تجزئة',
-    body: 'استفسارات الفروع وأوقات العمل مع سياق المنشور الذي جاءت منه.',
-  },
-  {
-    icon: Coffee,
-    title: 'مطعم أو مقهى',
-    body: 'طلبات الحجز وملاحظات الزوار تُتابَع حتى تُغلق، لا تضيع بين الإشعارات.',
-  },
-  {
-    icon: Users,
-    title: 'فريق خدمة عملاء',
-    body: 'شخص واحد يكفي لمتابعة كل القنوات، وفريق كامل يعمل على نفس الصندوق حين يكبر حجم التفاعلات.',
-  },
-  {
-    icon: BarChart3,
-    title: 'علامة تجارية',
-    body: 'تعرف أي منصة تجلب أكثر التفاعلات، وأيها ما زال ينتظر ردًا.',
   },
 ]
 
@@ -579,45 +539,12 @@ function BeforeAfter() {
   )
 }
 
-function UseCases() {
-  return (
-    <section
-      id="use-cases"
-      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
-    >
-      <div className="mx-auto max-w-5xl">
-        <Reveal>
-          <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
-            مصمّم للمتاجر والأنشطة على اختلاف أحجامها
-          </h2>
-        </Reveal>
-
-        <Reveal
-          as="ul"
-          mode="children"
-          className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {USE_CASES.map((item) => (
-            <li
-              key={item.title}
-              className="group rounded-xl border border-border bg-canvas p-5 transition-[transform,box-shadow,border-color] duration-200 hover:border-brand-300 hover:shadow-md motion-safe:hover:-translate-y-1"
-            >
-              <span className="grid size-9 place-items-center rounded-lg border border-border bg-surface text-brand-600 transition-colors duration-200 group-hover:border-brand-200 group-hover:bg-brand-50">
-                <item.icon className="size-4" aria-hidden />
-              </span>
-              <h3 className="mt-3.5 text-sm font-semibold text-ink">{item.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{item.body}</p>
-            </li>
-          ))}
-        </Reveal>
-      </div>
-    </section>
-  )
-}
-
 function Pricing() {
   return (
-    <section id="pricing" className="scroll-mt-24 px-4 py-16 sm:px-6">
+    <section
+      id="pricing"
+      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
+    >
       <div className="mx-auto max-w-5xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
@@ -630,7 +557,7 @@ function Pricing() {
             <li
               key={plan.name}
               className={cn(
-                'group flex flex-col rounded-xl border bg-surface p-6 transition-[transform,box-shadow,border-color] duration-200 hover:shadow-md motion-safe:hover:-translate-y-1',
+                'group flex flex-col rounded-xl border bg-canvas p-6 transition-[transform,box-shadow,border-color] duration-200 hover:shadow-md motion-safe:hover:-translate-y-1',
                 plan.featured ? 'border-brand-300 shadow-sm' : 'border-border hover:border-brand-300',
               )}
             >
@@ -685,10 +612,7 @@ function Pricing() {
 
 function Faq() {
   return (
-    <section
-      id="faq"
-      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
-    >
+    <section id="faq" className="scroll-mt-24 px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-2xl">
         <Reveal>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">الأسئلة الشائعة</h2>
@@ -857,7 +781,6 @@ export function LandingPage() {
         <Categories />
         <HowItWorks />
         <BeforeAfter />
-        <UseCases />
         <Pricing />
         <Faq />
         <FinalCta />

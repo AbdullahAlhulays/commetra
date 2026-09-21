@@ -47,9 +47,6 @@ describe('LandingPage', () => {
   it('answers the sizing question without limiting the product to small businesses', () => {
     renderWithProviders(<LandingPage />)
 
-    expect(
-      screen.getByRole('heading', { name: /مصمّم للمتاجر والأنشطة على اختلاف أحجامها/ }),
-    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /هل المنصة مناسبة لحجم نشاطي؟/ })).toBeInTheDocument()
     expect(screen.queryByText(/هل المنصة مناسبة للشركات الصغيرة؟/)).not.toBeInTheDocument()
   })
