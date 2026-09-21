@@ -1,12 +1,15 @@
 import {
   ArrowRight,
   Check,
+  EyeOff,
   Mail,
   MailOpen,
   MessageSquare,
   MoreHorizontal,
+  ShieldAlert,
 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { CategoryBadge } from '@/components/category-badge'
 import { EmptyState, ErrorState } from '@/components/states'
 import { PlatformChip } from '@/components/platform/platform-chip'
 import { PLATFORM_LABELS_BY_PROVIDER } from '@/components/platform/platform-meta'
@@ -23,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  INTERACTION_CATEGORY_LABELS,
   INTERACTION_TYPE_LABELS,
   WORKFLOW_STATUSES,
   WORKFLOW_STATUS_LABELS,
@@ -142,6 +146,42 @@ function useMarkReadOnOpen(interaction: Interaction | undefined, enabled: boolea
   }, [enabled, interaction, setRead])
 }
 
+/**
+ * What happened to this comment on the post it came from.
+ *
+ * Only rendered when there is something to say. `cannot_hide` is the case that
+ * earns a warning: the business flagged the comment, and it is still live
+ * under the post because the network gives us no way to take it down.
+ */
+function VisibilityNotice({ interaction }: { interaction: Interaction }) {
+  if (interaction.publicVisibility === 'hidden') {
+    return (
+      <div className="flex items-start gap-2.5 rounded-lg border border-border bg-surface-sunken px-3 py-2.5">
+        <EyeOff className="mt-0.5 size-3.5 shrink-0 text-ink-muted" aria-hidden />
+        <p className="text-2xs leading-relaxed text-ink-secondary">
+          صُنّف هذا التعليق ضمن «{INTERACTION_CATEGORY_LABELS[interaction.category]}» وأُخفي عن
+          المنشور، فلا يظهر لبقية المتابعين. يبقى هنا لتقرأه وترد عليه متى شئت.
+        </p>
+      </div>
+    )
+  }
+
+  if (interaction.publicVisibility === 'cannot_hide') {
+    return (
+      <div className="flex items-start gap-2.5 rounded-lg border border-warning-border bg-warning-surface px-3 py-2.5">
+        <ShieldAlert className="mt-0.5 size-3.5 shrink-0 text-warning-strong" aria-hidden />
+        <p className="text-2xs leading-relaxed text-warning-strong">
+          صُنّف هذا التعليق ضمن «{INTERACTION_CATEGORY_LABELS[interaction.category]}»، لكن{' '}
+          {PLATFORM_LABELS_BY_PROVIDER[interaction.provider]} لا تتيح إخفاء التعليقات من خارج
+          التطبيق. ما زال ظاهرًا على المنشور، ويمكنك إخفاؤه من التطبيق مباشرة.
+        </p>
+      </div>
+    )
+  }
+
+  return null
+}
+
 export function InteractionDetail({
   interaction,
   account,
@@ -239,6 +279,10 @@ export function InteractionDetail({
             </span>
             <span>{INTERACTION_TYPE_LABELS[interaction.type]}</span>
           </div>
+
+          <div className="mt-1.5">
+            <CategoryBadge category={interaction.category} />
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
@@ -292,6 +336,8 @@ export function InteractionDetail({
       </header>
 
       <div className="scrollbar-thin min-h-0 flex-1 space-y-4 overflow-y-auto px-3 py-4 sm:px-4">
+        <VisibilityNotice interaction={interaction} />
+
         <OriginalContentPanel interaction={interaction} />
 
         <MessageBubble

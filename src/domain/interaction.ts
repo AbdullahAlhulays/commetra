@@ -27,6 +27,85 @@ export const WORKFLOW_STATUS_LABELS: Record<WorkflowStatus, string> = {
   resolved: 'تم الحل',
 }
 
+/**
+ * What the interaction is *about*, assigned automatically as it arrives.
+ *
+ * Status answers "have we dealt with it"; category answers "what is it".
+ * The two are orthogonal on purpose: a sales question can be new or resolved,
+ * and a complaint is still a complaint after it is answered.
+ *
+ * Order matters — it is the order the rail lists them in, and it runs from the
+ * interactions that cost the most to miss down to the ones that cost nothing.
+ */
+export const INTERACTION_CATEGORIES = [
+  'sales_intent',
+  'customer_service',
+  'negative',
+  'spam',
+  'other',
+] as const
+
+export type InteractionCategory = (typeof INTERACTION_CATEGORIES)[number]
+
+export const INTERACTION_CATEGORY_LABELS: Record<InteractionCategory, string> = {
+  sales_intent: 'نية شرائية',
+  customer_service: 'خدمة عملاء',
+  negative: 'تعليق سلبي',
+  spam: 'إزعاج وسبام',
+  other: 'أخرى',
+}
+
+export const INTERACTION_CATEGORY_DESCRIPTIONS: Record<InteractionCategory, string> = {
+  sales_intent: 'سؤال عن سعر أو توفر أو طلب — عميل قريب من الشراء.',
+  customer_service: 'سؤال عن طلب قائم أو شحن أو إرجاع أو فرع.',
+  negative: 'شكوى أو انتقاد يحتاج معالجة قبل أن يكبر.',
+  spam: 'إعلانات وروابط وتعليقات مسيئة لا علاقة لها بنشاطك.',
+  other: 'شكر ومجاملات وتعليقات عامة لا تنتظر ردًا عاجلًا.',
+}
+
+/**
+ * The categories kept off the public post.
+ *
+ * Hiding never deletes and never blocks a reply: the interaction stays in the
+ * inbox, readable and answerable. It only stops being visible to everyone else
+ * under the post.
+ */
+export function isHiddenCategory(category: InteractionCategory): boolean {
+  return category === 'negative' || category === 'spam'
+}
+
+/**
+ * Whether this interaction still shows publicly under the post.
+ *
+ * `cannot_hide` is deliberately not folded into `public`: it means the network
+ * gives us no way to take the comment down, and a business that thinks a
+ * comment was hidden when it is still live has been misled by its own tool.
+ */
+export type PublicVisibility = 'public' | 'hidden' | 'cannot_hide' | 'not_applicable'
+
+export const PUBLIC_VISIBILITY_LABELS: Record<PublicVisibility, string> = {
+  public: 'ظاهر للجميع',
+  hidden: 'مخفي عن المنشور',
+  cannot_hide: 'لا تتيح المنصة إخفاءه',
+  not_applicable: 'رسالة خاصة',
+}
+
+/**
+ * Resolves what the platform actually did with a flagged interaction.
+ *
+ * Single source of truth, so the list badge, the detail banner and the mock
+ * ingest can never disagree about whether a comment is off the post.
+ */
+export function resolvePublicVisibility(
+  category: InteractionCategory,
+  type: InteractionType,
+  capabilities: ProviderCapabilities,
+): PublicVisibility {
+  if (type === 'direct_message') return 'not_applicable'
+  if (!isHiddenCategory(category)) return 'public'
+  return capabilities.canHideComments ? 'hidden' : 'cannot_hide'
+}
+
 /** Outcome of the business's own replies on this interaction. */
 export type ReplyState = 'none' | 'sending' | 'sent' | 'failed'
 
@@ -112,6 +191,10 @@ export interface Interaction {
   createdAt: string
   isRead: boolean
   status: WorkflowStatus
+  /** Assigned on arrival. Never blocks reading or replying. */
+  category: InteractionCategory
+  /** Whether the comment still shows under the post for everyone else. */
+  publicVisibility: PublicVisibility
   replyState: ReplyState
   replies: Reply[]
   originalContent: OriginalContent | null

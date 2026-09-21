@@ -1,10 +1,15 @@
 import {
+  ArrowLeft,
+  Check,
+  EyeOff,
   FileText,
   Inbox,
   Link2,
   ListChecks,
   ScanLine,
   Search,
+  Tags,
+  X as CrossIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -17,12 +22,20 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { CategoryBadge } from '@/components/category-badge'
 import { Button } from '@/components/ui/button'
+import {
+  INTERACTION_CATEGORIES,
+  INTERACTION_CATEGORY_DESCRIPTIONS,
+  PROVIDER_CAPABILITIES,
+  type ProviderCapabilities,
+} from '@/domain'
 import { cn } from '@/lib/cn'
 import { DetailMockup, InboxMockup } from './inbox-mockup'
 import { Reveal } from './reveal'
 
 const NAV_LINKS = [
+  { id: 'categories', label: 'التصنيف' },
   { id: 'how', label: 'كيف تعمل؟' },
   { id: 'features', label: 'المميزات' },
   { id: 'use-cases', label: 'حالات الاستخدام' },
@@ -71,6 +84,16 @@ const FEATURES = [
     body: 'جديد، مفتوح، بانتظار، تم الحل — لتعرف ما الذي ما زال ينتظر ردًا.',
   },
   {
+    icon: Tags,
+    title: 'تصنيف تلقائي لكل تفاعل',
+    body: 'نية شرائية، خدمة عملاء، تعليق سلبي، إزعاج — قبل أن تفتحه.',
+  },
+  {
+    icon: EyeOff,
+    title: 'إخفاء السلبي والسبام',
+    body: 'يختفي عن منشورك على المنصات التي تتيح ذلك، ويبقى في صندوقك.',
+  },
+  {
     icon: Link2,
     title: 'عدة حسابات لكل منصة',
     body: 'اربط أكثر من حساب، مع تنبيه عند انتهاء صلاحية أي ربط.',
@@ -117,6 +140,11 @@ const FAQ = [
       'لا نعرض زرًا لا يعمل. إذا كان الرد غير متاح، يُستبدل صندوق الرد بشرح مختصر للسبب، ويبقى التفاعل مقروءًا وقابلاً للمتابعة وتغيير حالته.',
   },
   {
+    question: 'ماذا يحدث للتعليقات السلبية والسبام؟',
+    answer:
+      'تُصنَّف تلقائيًا وتُخفى عن المنشور على Instagram و Facebook، فلا يراها بقية المتابعين، وتبقى في صندوقك لتقرأها وترد عليها متى شئت. على TikTok و X نصنّفها ونعلّمها لك بوضوح، لأن المنصتين لا تتيحان إخفاء التعليقات من خارج تطبيقهما.',
+  },
+  {
     question: 'هل بيانات الحسابات آمنة؟',
     answer:
       'مفاتيح الوصول تُحفظ في الخادم ولا تصل إلى المتصفح. يمكنك إلغاء ربط أي حساب في أي وقت، ويتوقف الوصول وتُزال تفاعلاته من الصندوق.',
@@ -133,11 +161,52 @@ const FAQ = [
 const NAV_SECTION_IDS = NAV_LINKS.map((link) => link.id)
 
 /**
- * Repeats the platform list so the ticker track is wider than any viewport
- * and can loop by translating exactly half of itself. The count is even, so
- * the halfway frame is identical to the starting one.
+ * The before/after comparison. Each pair is one row of the same problem, so
+ * the two columns stay aligned line for line; every "after" is a capability
+ * that exists in the product today, not a roadmap item.
  */
-const TICKER_PLATFORMS = Array.from({ length: 8 }, () => PLATFORM_ORDER).flat()
+const TRANSFORMATION = [
+  {
+    before: 'تنقّل بين أربعة تطبيقات طوال اليوم',
+    after: 'صندوق وارد واحد لكل المنصات',
+  },
+  {
+    before: 'تقرأ مئة تعليق لتجد سؤال شراء واحد',
+    after: 'كل تفاعل مصنّف قبل أن تفتحه',
+  },
+  {
+    before: 'تعليق مسيء يبقى تحت منشورك أمام الجميع',
+    after: 'السلبي والسبام يُخفى عن المنشور تلقائيًا',
+  },
+  {
+    before: 'ترد على تعليق دون أن تعرف من أي منشور جاء',
+    after: 'المنشور أو الفيديو أمامك وأنت تكتب الرد',
+  },
+  {
+    before: 'لا تعرف ما الذي رد عليه زميلك',
+    after: 'حالة لكل تفاعل: جديد، مفتوح، بانتظار، تم الحل',
+  },
+  {
+    before: 'لا طريقة سريعة لمعرفة ما بقي دون رد',
+    after: 'بحث وتصفية حسب المنصة أو التصنيف أو الحالة',
+  },
+]
+
+/**
+ * One line per platform, read off the capability matrix instead of written by
+ * hand. If TikTok's access tier changes, this card changes with it rather
+ * than quietly overpromising on the homepage.
+ */
+function channelSummary(capabilities: ProviderCapabilities): string {
+  const surfaces = [
+    capabilities.canReadComments ? 'التعليقات' : null,
+    capabilities.canReadDirectMessages ? 'الرسائل' : null,
+  ].filter((surface): surface is string => surface !== null)
+
+  const canReply = capabilities.canReplyToComments || capabilities.canReplyToDirectMessages
+
+  return `${surfaces.join(' و')} — ${canReply ? 'قراءة وردّ' : 'قراءة فقط'}`
+}
 
 /**
  * Tracks which section the visitor is reading, for the navbar.
@@ -224,7 +293,7 @@ function Hero() {
         <Reveal delay={80}>
           <p className="mx-auto mt-4 max-w-xl text-md leading-relaxed text-ink-secondary sm:text-lg">
             يجمع Comment التعليقات والرسائل من Instagram و Facebook و TikTok و X في صندوق وارد واحد،
-            فتقرأ وترد من منصة واحدة ومكان واحد.
+            ويصنّف كل واحدة تلقائيًا، فتقرأ وترد من منصة واحدة ومكان واحد دون أن يفوتك عميل.
           </p>
         </Reveal>
 
@@ -245,37 +314,111 @@ function Hero() {
   )
 }
 
-function Platforms() {
+function Channels() {
   return (
-    <section className="border-y border-border bg-surface py-10 sm:py-12">
-      <div className="px-4 sm:px-6">
-        <Reveal>
-          <p className="mx-auto max-w-md text-center text-sm leading-relaxed text-ink-secondary">
-            المنصات المدعومة اليوم، ولكل منها صلاحيات مختلفة نعرضها لك قبل الربط.
+    <section
+      id="channels"
+      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
+    >
+      <div className="mx-auto max-w-5xl">
+        <Reveal className="text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            كل قنوات التواصل في مكان واحد
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-ink-secondary">
+            استقبل تعليقات ورسائل عملائك من كل منصة في صندوق وارد واحد لفريقك.
+          </p>
+        </Reveal>
+
+        <Reveal as="ul" mode="children" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PLATFORM_ORDER.map((provider) => (
+            <li
+              key={provider}
+              className="rounded-xl border border-border bg-canvas p-5 text-center transition-colors duration-200 hover:border-border-strong"
+            >
+              <PlatformChip provider={provider} size="lg" className="mx-auto" />
+              <h3 className="latin mt-3.5 text-md font-semibold text-ink">
+                {PLATFORM_LABELS_BY_PROVIDER[provider]}
+              </h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+                {channelSummary(PROVIDER_CAPABILITIES[provider])}
+              </p>
+            </li>
+          ))}
+        </Reveal>
+
+        {/* The one teal surface on the page, spent on the sentence the whole
+            section exists to deliver. */}
+        <Reveal
+          delay={140}
+          className="mt-6 rounded-xl border border-brand-200 bg-brand-50 px-6 py-4 text-center"
+        >
+          <p className="text-sm font-medium text-brand-800">
+            صندوق وارد واحد لكل هذه القنوات — فريقك يرد من مكان واحد.
           </p>
         </Reveal>
       </div>
+    </section>
+  )
+}
 
-      {/* The ticker is a repeated loop, so the platform names are given once
-          here for assistive tech instead of thirty-two times below. */}
-      <p className="sr-only">
-        المنصات المدعومة: {PLATFORM_ORDER.map((provider) => PLATFORM_LABELS_BY_PROVIDER[provider]).join('، ')}
-      </p>
+function Categories() {
+  return (
+    <section id="categories" className="scroll-mt-24 px-4 py-16 sm:px-6">
+      <div className="mx-auto max-w-4xl">
+        <Reveal className="text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            كل تعليق ورسالة يُصنَّف قبل أن تفتحه
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-secondary">
+            جمع كل المنصات في مكان واحد هو نصف الحل. النصف الآخر أن تعرف من أول نظرة ما الذي
+            يستحق ردًا الآن، فلا يضيع عميل جاهز للشراء بين مئة تعليق.
+          </p>
+        </Reveal>
 
-      <div
-        aria-hidden
-        className="marquee relative mt-8 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
-      >
-        <div className="marquee-track items-center">
-          {TICKER_PLATFORMS.map((provider, index) => (
-            <span key={`${provider}-${index}`} className="flex shrink-0 items-center gap-2.5 px-7">
-              <PlatformChip provider={provider} size="md" />
-              <span className="latin text-sm font-medium text-ink">
-                {PLATFORM_LABELS_BY_PROVIDER[provider]}
+        {/* Labels and descriptions come from the domain, so this list is the
+            product's own taxonomy rather than a marketing paraphrase of it. */}
+        <Reveal
+          as="ul"
+          mode="children"
+          className="mt-10 divide-y divide-border rounded-xl border border-border bg-surface"
+        >
+          {INTERACTION_CATEGORIES.map((category) => (
+            <li
+              key={category}
+              className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:gap-6"
+            >
+              <span className="shrink-0 sm:w-32">
+                <CategoryBadge category={category} />
               </span>
-            </span>
+              <p className="text-sm leading-relaxed text-ink-secondary">
+                {INTERACTION_CATEGORY_DESCRIPTIONS[category]}
+              </p>
+            </li>
           ))}
-        </div>
+        </Reveal>
+
+        <Reveal
+          delay={140}
+          className="mt-6 flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 sm:flex-row sm:items-start sm:gap-5"
+        >
+          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-solid text-white">
+            <EyeOff className="size-5" aria-hidden />
+          </span>
+          <div>
+            <h3 className="text-md font-semibold text-ink">
+              السلبي والسبام يختفي عن منشورك، لا عن صندوقك
+            </h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">
+              التعليقات المسيئة والإعلانات والشكاوى تُخفى عن المنشور تلقائيًا، فلا يراها بقية
+              المتابعين. تبقى عندك في الصندوق كاملة، تقرأها وترد عليها متى شئت.
+            </p>
+            <p className="mt-2.5 text-xs leading-relaxed text-ink-muted">
+              الإخفاء متاح على Instagram و Facebook. على TikTok و X نصنّفها ونعلّمها لك بوضوح،
+              لأن المنصتين لا تتيحان إخفاء التعليقات من خارج تطبيقهما.
+            </p>
+          </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -283,7 +426,7 @@ function Platforms() {
 
 function HowItWorks() {
   return (
-    <section id="how" className="scroll-mt-24 px-4 py-16 sm:px-6">
+    <section id="how" className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <Reveal>
           <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
@@ -321,7 +464,7 @@ function HowItWorks() {
 
 function ProductShowcase() {
   return (
-    <section id="product" className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6">
+    <section id="product" className="scroll-mt-24 px-4 py-16 sm:px-6">
       <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
         <Reveal>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">
@@ -360,6 +503,66 @@ function ProductShowcase() {
         <Reveal delay={100}>
           <DetailMockup />
         </Reveal>
+      </div>
+    </section>
+  )
+}
+
+function BeforeAfter() {
+  return (
+    <section className="border-y border-border bg-surface px-4 py-16 sm:px-6">
+      <div className="mx-auto max-w-5xl">
+        <Reveal className="text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            من الفوضى إلى صندوق واحد منظّم
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-ink-secondary">
+            الفرق بين متابعة أربع منصات يدويًا ومتابعتها كلها من مكان واحد.
+          </p>
+        </Reveal>
+
+        {/* Problems first: in RTL that puts them in the right-hand column, and
+            the arrow points left, toward the outcome. */}
+        <div className="mt-10 grid items-start gap-6 md:grid-cols-[1fr_auto_1fr] md:gap-5">
+          <Reveal>
+            <h3 className="mb-3 text-sm font-semibold text-ink-muted">الوضع اليوم</h3>
+            <ul className="space-y-2.5">
+              {TRANSFORMATION.map((item) => (
+                <li
+                  key={item.before}
+                  className="flex items-start gap-2.5 rounded-lg border border-danger-border bg-danger-surface px-3.5 py-3"
+                >
+                  <CrossIcon className="mt-1 size-3.5 shrink-0 text-danger" aria-hidden />
+                  <span className="text-sm leading-relaxed text-danger-strong">{item.before}</span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+
+          <div className="flex justify-center md:self-center" aria-hidden>
+            <span className="grid size-9 place-items-center rounded-full border border-border bg-surface text-ink-faint">
+              {/* Stacked on mobile, so the arrow turns to point down the page. */}
+              <ArrowLeft className="size-4 max-md:-rotate-90" />
+            </span>
+          </div>
+
+          <Reveal delay={120}>
+            <h3 className="mb-3 text-sm font-semibold text-ink">
+              مع <span className="latin">Comment</span>
+            </h3>
+            <ul className="space-y-2.5">
+              {TRANSFORMATION.map((item) => (
+                <li
+                  key={item.after}
+                  className="flex items-start gap-2.5 rounded-lg border border-success-border bg-success-surface px-3.5 py-3"
+                >
+                  <Check className="mt-1 size-3.5 shrink-0 text-success" aria-hidden />
+                  <span className="text-sm leading-relaxed text-success-strong">{item.after}</span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
       </div>
     </section>
   )
@@ -595,9 +798,11 @@ export function LandingPage() {
       <Navbar />
       <main>
         <Hero />
-        <Platforms />
+        <Channels />
+        <Categories />
         <HowItWorks />
         <ProductShowcase />
+        <BeforeAfter />
         <Features />
         <UseCases />
         <Faq />

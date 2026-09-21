@@ -407,40 +407,6 @@
       transition-delay: 300ms;
     }
   }
-
-  /*
-   * Platform ticker.
-   *
-   * The track repeats the platform list an even number of times, so shifting
-   * it by exactly half its width lands on an identical frame and the loop is
-   * seamless. The page is RTL: the track is anchored to the right edge, so a
-   * positive translate is what pulls the next copy into view.
-   */
-  .marquee-track {
-    display: flex;
-    width: max-content;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .marquee-track {
-      animation: marquee 44s linear infinite;
-    }
-
-    /* Hovering is a read intent — hold the row still. */
-    .marquee:hover .marquee-track,
-    .marquee:focus-within .marquee-track {
-      animation-play-state: paused;
-    }
-  }
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(50%);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

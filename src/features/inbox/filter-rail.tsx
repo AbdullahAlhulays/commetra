@@ -1,13 +1,17 @@
 import { CircleSlash, Inbox as InboxIcon, MailOpen } from 'lucide-react'
+import { CategoryIcon } from '@/components/category-badge'
 import { PlatformChip } from '@/components/platform/platform-chip'
 import { PLATFORM_LABELS_BY_PROVIDER, PLATFORM_ORDER } from '@/components/platform/platform-meta'
 import { StatusDot } from '@/components/status-indicator'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  INTERACTION_CATEGORIES,
+  INTERACTION_CATEGORY_LABELS,
   INTERACTION_TYPE_LABELS,
   WORKFLOW_STATUSES,
   WORKFLOW_STATUS_LABELS,
   type ConnectedAccount,
+  type InteractionCategory,
   type InteractionType,
   type SocialProvider,
   type WorkflowStatus,
@@ -106,6 +110,13 @@ export function FilterRail({
     onChange({ statuses: next })
   }
 
+  function toggleCategory(category: InteractionCategory) {
+    const next = filters.categories.includes(category)
+      ? filters.categories.filter((value) => value !== category)
+      : [...filters.categories, category]
+    onChange({ categories: next })
+  }
+
   function toggleProvider(provider: SocialProvider) {
     const next = filters.providers.includes(provider)
       ? filters.providers.filter((value) => value !== provider)
@@ -148,6 +159,26 @@ export function FilterRail({
           )
         })}
       </div>
+
+      <RailSection title="التصنيف">
+        {INTERACTION_CATEGORIES.map((category) => (
+          <RailRow
+            key={category}
+            active={filters.categories.includes(category)}
+            onClick={() => toggleCategory(category)}
+            count={countOf(counts?.byCategory[category])}
+          >
+            <CategoryIcon
+              category={category}
+              className={cn(
+                'size-3.5 shrink-0',
+                filters.categories.includes(category) ? 'text-brand-600' : 'text-ink-faint',
+              )}
+            />
+            {INTERACTION_CATEGORY_LABELS[category]}
+          </RailRow>
+        ))}
+      </RailSection>
 
       <RailSection title="الحالة">
         {WORKFLOW_STATUSES.map((status) => (

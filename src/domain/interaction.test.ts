@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PROVIDER_CAPABILITIES, type ConnectedAccount, type Interaction } from '@/domain'
-import { isUnreplied, resolveReplyAvailability } from './interaction'
+import { isHiddenCategory, isUnreplied, resolvePublicVisibility, resolveReplyAvailability } from './interaction'
 
 function makeAccount(overrides: Partial<ConnectedAccount> = {}): ConnectedAccount {
   return {
@@ -37,6 +37,8 @@ function makeInteraction(overrides: Partial<Interaction> = {}): Interaction {
     createdAt: '2026-01-01T00:00:00.000Z',
     isRead: false,
     status: 'new',
+    category: 'customer_service',
+    publicVisibility: 'public',
     replyState: 'none',
     replies: [],
     originalContent: null,
@@ -173,5 +175,41 @@ describe('isUnreplied', () => {
     })
 
     expect(isUnreplied(interaction)).toBe(true)
+  })
+})
+
+describe('resolvePublicVisibility', () => {
+  const meta = PROVIDER_CAPABILITIES.instagram
+  const tiktok = PROVIDER_CAPABILITIES.tiktok
+
+  it('leaves ordinary comments on the post', () => {
+    expect(resolvePublicVisibility('sales_intent', 'comment', meta)).toBe('public')
+    expect(resolvePublicVisibility('customer_service', 'comment', meta)).toBe('public')
+    expect(resolvePublicVisibility('other', 'comment', meta)).toBe('public')
+  })
+
+  it('takes spam and complaints off the post where the network allows it', () => {
+    expect(resolvePublicVisibility('spam', 'comment', meta)).toBe('hidden')
+    expect(resolvePublicVisibility('negative', 'comment', meta)).toBe('hidden')
+  })
+
+  it('never claims a comment was hidden on a network that cannot hide it', () => {
+    // The whole point of the third state: saying "hidden" here would tell a
+    // business its post is clean while the comment is still live on TikTok.
+    expect(tiktok.canHideComments).toBe(false)
+    expect(resolvePublicVisibility('spam', 'comment', tiktok)).toBe('cannot_hide')
+    expect(resolvePublicVisibility('negative', 'comment', tiktok)).toBe('cannot_hide')
+  })
+
+  it('does not apply to direct messages, which were never public', () => {
+    expect(resolvePublicVisibility('spam', 'direct_message', meta)).toBe('not_applicable')
+  })
+
+  it('agrees with isHiddenCategory about which categories are flagged', () => {
+    expect(isHiddenCategory('spam')).toBe(true)
+    expect(isHiddenCategory('negative')).toBe(true)
+    expect(isHiddenCategory('sales_intent')).toBe(false)
+    expect(isHiddenCategory('customer_service')).toBe(false)
+    expect(isHiddenCategory('other')).toBe(false)
   })
 })

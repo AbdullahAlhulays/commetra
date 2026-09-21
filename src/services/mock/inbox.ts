@@ -1,6 +1,7 @@
 import type {
   ConnectedAccount,
   Interaction,
+  InteractionCategory,
   InteractionId,
   Reply,
   WorkflowStatus,
@@ -63,6 +64,9 @@ function applyFilters(query: InboxQuery): Interaction[] {
         query.connectedAccountIds.includes(interaction.connectedAccountId),
     )
     .filter((interaction) => !query.statuses?.length || query.statuses.includes(interaction.status))
+    .filter(
+      (interaction) => !query.categories?.length || query.categories.includes(interaction.category),
+    )
     .filter((interaction) => !query.types?.length || query.types.includes(interaction.type))
     .filter((interaction) => {
       if (!query.read || query.read === 'all') return true
@@ -132,15 +136,24 @@ export const mockInboxService: InboxService = {
       read: 'all',
       replied: 'all',
       statuses: [],
+      categories: [],
     })
 
     const byStatus = { new: 0, open: 0, pending: 0, resolved: 0 } satisfies Record<WorkflowStatus, number>
+    const byCategory = {
+      sales_intent: 0,
+      customer_service: 0,
+      negative: 0,
+      spam: 0,
+      other: 0,
+    } satisfies Record<InteractionCategory, number>
     const byProvider = { instagram: 0, facebook: 0, tiktok: 0, x: 0 }
     const byAccount: Record<string, number> = {}
     for (const account of db.accounts) byAccount[account.id] = 0
 
     for (const interaction of scoped) {
       byStatus[interaction.status] += 1
+      byCategory[interaction.category] += 1
       byProvider[interaction.provider] += 1
       byAccount[interaction.connectedAccountId] = (byAccount[interaction.connectedAccountId] ?? 0) + 1
     }
@@ -150,6 +163,7 @@ export const mockInboxService: InboxService = {
       unread: scoped.filter((interaction) => !interaction.isRead).length,
       unreplied: scoped.filter(isUnreplied).length,
       byStatus,
+      byCategory,
       byProvider,
       byAccount,
     }

@@ -1,5 +1,6 @@
 import type {
   Interaction,
+  InteractionCategory,
   InteractionType,
   MediaAttachment,
   MediaKind,
@@ -9,7 +10,7 @@ import type {
   SocialProvider,
   WorkflowStatus,
 } from '@/domain'
-import { PROVIDER_CAPABILITIES } from '@/domain'
+import { PROVIDER_CAPABILITIES, resolvePublicVisibility } from '@/domain'
 import { ACCOUNT_IDS, ORG_ID, seedAccounts } from './seed-accounts'
 import { minutesAgo } from './time'
 
@@ -37,6 +38,13 @@ interface InteractionSeed {
   text: string
   /** Minutes before load time. */
   at: number
+  /**
+   * Authored rather than derived. Production assigns this from the classifier
+   * on ingest; here it is written per seed so the demo inbox shows a realistic
+   * spread across all five categories instead of whatever keyword matching
+   * happens to produce on 60 rows.
+   */
+  category: InteractionCategory
   read?: boolean
   status?: WorkflowStatus
   context?: { excerpt: string; at: number; media?: MediaSeed[] }
@@ -73,6 +81,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'munira.q',
     text: 'حبوب الإثيوبي المذكورة في الفيديو متوفرة الحين؟ أبي أطلب كيلو.',
     at: 6,
+    category: 'sales_intent',
     status: 'new',
     context: {
       excerpt: 'وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.',
@@ -88,6 +97,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'f.alanzi',
     text: 'مساء الخير، طلبي رقم ٤٨٢١ صار له ثلاثة أيام ولا وصلني تحديث. ممكن تتابعونه؟',
     at: 21,
+    category: 'customer_service',
     status: 'open',
     thread: [
       {
@@ -105,6 +115,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'reem_d',
     text: 'القهوة وصلتني اليوم والرائحة خيالية 🤎 شكراً لكم على التغليف المرتب.',
     at: 47,
+    category: 'other',
     read: true,
     status: 'resolved',
     thread: [
@@ -124,6 +135,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'a.alghamdi',
     text: 'كم سعر الكيلو؟ وهل فيه خصم لو طلبت أكثر من كيلو؟',
     at: 96,
+    category: 'sales_intent',
     status: 'new',
     context: {
       excerpt: 'وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.',
@@ -139,6 +151,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'lama.s',
     text: 'هل عندكم دورة تحضير قهوة للمبتدئين؟ وكم مدتها؟',
     at: 140,
+    category: 'sales_intent',
     read: true,
     status: 'pending',
     thread: [
@@ -158,6 +171,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'turki.sh',
     text: 'الفرع مفتوح الجمعة؟',
     at: 210,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'نعم، من ٢ ظهراً إلى ١٢ منتصف الليل.', at: 205 }],
@@ -170,6 +184,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'hind.m',
     text: 'طلبت أمس واختار لي الموقع فرع غير الفرع اللي أبيه. أقدر أغيره؟',
     at: 320,
+    category: 'customer_service',
     status: 'open',
   },
   {
@@ -180,6 +195,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'khaled.b',
     text: 'أبي أهدي صديقي اشتراك شهري. كيف الطريقة؟',
     at: 460,
+    category: 'sales_intent',
     read: true,
     status: 'open',
   },
@@ -191,6 +207,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'amal.z',
     text: 'التحميص الغامق متى يرجع؟ كل ما أدخل ألقاه خلص.',
     at: 610,
+    category: 'sales_intent',
     status: 'new',
   },
 
@@ -202,6 +219,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'sultan.h',
     text: 'الشحن للدمام كم ياخذ يوم؟',
     at: 1900,
+    category: 'customer_service',
     read: true,
     status: 'open',
   },
@@ -213,6 +231,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'jawaher.o',
     text: 'وصلني الطلب ناقص كيس. تواصلت مع الدعم ولا رد.',
     at: 2150,
+    category: 'negative',
     status: 'pending',
   },
   {
@@ -223,6 +242,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'majed.r',
     text: 'عندكم فواتير ضريبية للشركات؟',
     at: 2400,
+    category: 'customer_service',
     read: true,
     status: 'open',
   },
@@ -235,6 +255,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'هل يمكن الطلب واستلامه من الفرع بدون توصيل؟',
     at: 34,
+    category: 'sales_intent',
     status: 'new',
     context: {
       excerpt: 'صار بإمكانك الطلب من الموقع واستلامه من المحمصة خلال ٣٠ دقيقة.',
@@ -249,6 +270,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'السلام عليكم، أبحث عن تجهيز قهوة لمناسبة ١٥٠ شخص يوم الخميس القادم. هل تقدمون هذي الخدمة؟ وكم التكلفة التقريبية؟',
     at: 75,
+    category: 'sales_intent',
     status: 'open',
     thread: [
       {
@@ -266,6 +288,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'جربت الحلى الجديد أمس، صراحة ممتاز. بس الأسعار ارتفعت شوي عن قبل.',
     at: 190,
+    category: 'other',
     read: true,
     status: 'open',
   },
@@ -277,6 +300,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'فيه مواقف للسيارات قريبة من الفرع؟',
     at: 255,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [
@@ -291,6 +315,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'الطلب تأخر ثلاث ساعات عن الوقت المذكور، وما وصلني أي إشعار. هذي ثاني مرة تصير.',
     at: 400,
+    category: 'negative',
     status: 'pending',
     context: {
       excerpt: 'التوصيل السريع الآن داخل الرياض خلال ٩٠ دقيقة.',
@@ -305,6 +330,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'هل تبيعون ماكينات إسبريسو منزلية؟',
     at: 980,
+    category: 'sales_intent',
     read: true,
     status: 'open',
   },
@@ -316,6 +342,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'وين باقي الفروع؟ نبي فرع في الشمال.',
     at: 1420,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [
@@ -331,6 +358,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'waleed.om',
     text: 'وش اسم الطاحونة المستخدمة في الفيديو؟',
     at: 15,
+    category: 'customer_service',
     status: 'new',
     context: {
       excerpt: 'طريقة تحضير V60 خطوة بخطوة ☕️',
@@ -346,6 +374,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'afnan.t',
     text: 'الفيديو مفيد جداً، كملوا هالسلسلة 👏',
     at: 58,
+    category: 'other',
     status: 'new',
     context: {
       excerpt: 'طريقة تحضير V60 خطوة بخطوة ☕️',
@@ -361,6 +390,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'meshal.d',
     text: 'كم درجة حرارة الماء المناسبة؟',
     at: 132,
+    category: 'customer_service',
     status: 'open',
     context: {
       excerpt: 'طريقة تحضير V60 خطوة بخطوة ☕️',
@@ -376,6 +406,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'ghada.s',
     text: 'الموقع ما يفتح عندي، يطلع لي صفحة بيضاء.',
     at: 260,
+    category: 'customer_service',
     read: true,
     status: 'pending',
   },
@@ -387,6 +418,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'saud.h',
     text: 'توصلون خارج الرياض؟',
     at: 520,
+    category: 'sales_intent',
     read: true,
     status: 'open',
   },
@@ -398,6 +430,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'malak.a',
     text: 'أسعاركم مرتفعة مقارنة بغيركم بصراحة.',
     at: 880,
+    category: 'negative',
     status: 'open',
   },
   {
@@ -408,6 +441,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'omar.z',
     text: 'وين الفرع بالضبط؟',
     at: 1600,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
   },
@@ -420,6 +454,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'salman_f',
     text: 'طلبت أمس ووصل اليوم الصباح. سرعة ممتازة 👌',
     at: 28,
+    category: 'other',
     status: 'new',
     context: {
       excerpt: 'التوصيل داخل الرياض خلال ٩٠ دقيقة، وبقية المدن خلال ٤٨ ساعة.',
@@ -434,6 +469,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'naif_ar',
     text: 'تطبيقكم ما يقبل بطاقة مدى عندي، يطلع خطأ في كل مرة.',
     at: 110,
+    category: 'customer_service',
     status: 'open',
   },
   {
@@ -444,6 +480,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'bashayer_s',
     text: 'مرحباً، أمثل مقهى في جدة ونبي نوزع منتجاتكم. مع من أتواصل؟',
     at: 300,
+    category: 'sales_intent',
     read: true,
     status: 'open',
   },
@@ -455,6 +492,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'ibrahim_d',
     text: 'متى يرجع مزيج الصباح؟ صار له أسبوعين غير متوفر.',
     at: 430,
+    category: 'sales_intent',
     status: 'new',
   },
   {
@@ -465,6 +503,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'reema_h',
     text: 'شكراً على التعامل الراقي أمس في الفرع، الموظف كان متعاون جداً.',
     at: 1250,
+    category: 'other',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'هذا واجبنا، وسعدنا بزيارتك 🤎', at: 1240 }],
@@ -477,6 +516,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'talal_m',
     text: 'فيه خطط اشتراك شهرية؟',
     at: 2600,
+    category: 'sales_intent',
     read: true,
     status: 'open',
   },
@@ -496,6 +536,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'abeer.sh',
     text: 'وصلني الطلب اليوم والتغليف ممتاز، شكراً لكم.',
     at: 60 * 24 * 4,
+    category: 'other',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'شكراً لك، نسعد بخدمتك دائماً.', at: 60 * 24 * 4 - 40 }],
@@ -508,6 +549,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'هل يوجد توصيل للخرج؟',
     at: 60 * 24 * 4 + 300,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'نعم، خلال ٤٨ ساعة.', at: 60 * 24 * 4 + 240 }],
@@ -520,6 +562,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'nada.am',
     text: 'الفيديو الأخير مفيد، شكراً.',
     at: 60 * 24 * 5,
+    category: 'other',
     read: true,
     status: 'resolved',
   },
@@ -531,6 +574,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'hussam_n',
     text: 'الموقع بطيء عندي من الجوال.',
     at: 60 * 24 * 5 + 420,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [
@@ -545,6 +589,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'rahaf.s',
     text: 'أبي أعرف مواعيد جلسة التذوق القادمة.',
     at: 60 * 24 * 6,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'كل خميس الساعة ٧ مساءً، والحجز من الموقع.', at: 60 * 24 * 6 - 90 }],
@@ -557,6 +602,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'كم مدة صلاحية الحبوب بعد التحميص؟',
     at: 60 * 24 * 7,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'أفضل مدة خلال ٣٠ يوماً من تاريخ التحميص.', at: 60 * 24 * 7 - 60 }],
@@ -569,6 +615,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'mai.kh',
     text: 'هل التحميص الفاتح مناسب للإسبريسو؟',
     at: 60 * 24 * 8,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
   },
@@ -580,6 +627,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'ziyad.h',
     text: 'وين ألقى هالأكواب؟',
     at: 60 * 24 * 9,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
   },
@@ -591,6 +639,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'lina_q',
     text: 'نبي نطلب كمية لمكتب الشركة، مع من نتواصل؟',
     at: 60 * 24 * 10,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'أرسلنا لك تفاصيل طلبات الشركات على البريد.', at: 60 * 24 * 10 - 180 }],
@@ -603,6 +652,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'الطلب وصل متأخر يومين.',
     at: 60 * 24 * 11,
+    category: 'negative',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'نعتذر عن التأخير، وعوّضناك بقسيمة على الطلب القادم.', at: 60 * 24 * 11 - 120 }],
@@ -615,6 +665,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'asma.g',
     text: 'متى يفتح الفرع الجديد؟',
     at: 60 * 24 * 12,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
   },
@@ -626,6 +677,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'faisal.m',
     text: 'كم سعر الطاحونة؟',
     at: 60 * 24 * 13,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
   },
@@ -637,6 +689,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'haya_s',
     text: 'تجربة ممتازة في الفرع أمس.',
     at: 60 * 24 * 14,
+    category: 'other',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'سعدنا بزيارتك 🤎', at: 60 * 24 * 14 - 50 }],
@@ -649,6 +702,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'm.alateeq',
     text: 'هل أقدر أرجع المنتج لو ما عجبني؟',
     at: 60 * 24 * 15,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'نعم، الإرجاع متاح خلال ٧ أيام إذا كان المنتج مغلقاً.', at: 60 * 24 * 15 - 90 }],
@@ -661,6 +715,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'عندكم بطاقات هدايا؟',
     at: 60 * 24 * 17,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
   },
@@ -672,6 +727,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'kholoud.r',
     text: 'الكولد برو متوفر طول الأسبوع؟',
     at: 60 * 24 * 19,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
   },
@@ -683,6 +739,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'rayan.sh',
     text: 'أسلوب الشرح واضح، استمروا.',
     at: 60 * 24 * 21,
+    category: 'other',
     read: true,
     status: 'resolved',
   },
@@ -694,6 +751,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'sultana_d',
     text: 'الطلب وصل بارد، ممكن تتحققون من التغليف؟',
     at: 60 * 24 * 23,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'راجعنا التغليف مع شركة الشحن، ونعتذر عن التجربة.', at: 60 * 24 * 23 - 200 }],
@@ -706,6 +764,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'هل يوجد خصم للطلاب؟',
     at: 60 * 24 * 26,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
   },
@@ -717,6 +776,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'joud.h',
     text: 'أفضل طريقة لحفظ الحبوب في البيت؟',
     at: 60 * 24 * 28,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
     thread: [{ by: 'business', text: 'في عبوة محكمة بعيداً عن الحرارة والضوء.', at: 60 * 24 * 28 - 70 }],
@@ -729,6 +789,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'wesam.h',
     text: 'طلبي ما وصلني إشعار شحن.',
     at: 60 * 24 * 31,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
   },
@@ -740,6 +801,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'basma.a',
     text: 'أول مرة أعرف هالطريقة، شكراً.',
     at: 60 * 24 * 34,
+    category: 'other',
     read: true,
     status: 'resolved',
   },
@@ -751,6 +813,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'saleh_m',
     text: 'هل تصدّرون خارج السعودية؟',
     at: 60 * 24 * 38,
+    category: 'sales_intent',
     read: true,
     status: 'resolved',
   },
@@ -762,8 +825,54 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: null,
     text: 'الفرع يقبل الدفع بالمحفظة؟',
     at: 60 * 24 * 42,
+    category: 'customer_service',
     read: true,
     status: 'resolved',
+  },
+  /*
+   * Junk. Every network gets some, and the two Meta accounts show it taken
+   * off the post while TikTok and X show what happens when the network gives
+   * us no way to do that.
+   */
+  {
+    id: 'int_ig_10',
+    account: 'igCafe',
+    type: 'comment',
+    authorName: 'متجر المتابعين',
+    authorHandle: 'followers.deal',
+    text: 'متابعين حقيقيين وتفاعل مضمون بأرخص الأسعار 🔥 تواصل معنا خاص.',
+    at: 12,
+    category: 'spam',
+  },
+  {
+    id: 'int_fb_08',
+    account: 'facebook',
+    type: 'comment',
+    authorName: 'نقل وتغليف الرياض',
+    authorHandle: null,
+    text: 'أفضل شركة نقل وتغليف أثاث بالرياض، خصم ٣٠٪ هذا الأسبوع. اتصل الآن.',
+    at: 47,
+    category: 'spam',
+  },
+  {
+    id: 'int_tt_08',
+    account: 'tiktok',
+    type: 'comment',
+    authorName: 'ربح من الجوال',
+    authorHandle: 'daily.profit',
+    text: 'ربح يومي مضمون من البيت وبدون خبرة 💰 الرابط في الحساب.',
+    at: 19,
+    category: 'spam',
+  },
+  {
+    id: 'int_x_07',
+    account: 'x',
+    type: 'comment',
+    authorName: 'حساب مجهول',
+    authorHandle: null,
+    text: 'حساب فاشل وتسويق أفشل، سكّروا أحسن لكم 🤡',
+    at: 52,
+    category: 'spam',
   },
 ]
 
@@ -856,6 +965,14 @@ function buildOne(
     createdAt: minutesAgo(seed.at),
     isRead: seed.read ?? false,
     status: seed.status ?? 'new',
+    category: seed.category,
+    // Derived, never authored: the one place that decides whether a flagged
+    // comment actually came off the post is the domain resolver.
+    publicVisibility: resolvePublicVisibility(
+      seed.category,
+      seed.type,
+      PROVIDER_CAPABILITIES[provider],
+    ),
     replyState: businessReplied ? 'sent' : 'none',
     replies,
     originalContent: buildContext(seed),

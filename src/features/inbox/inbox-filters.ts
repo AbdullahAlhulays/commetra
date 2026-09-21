@@ -1,8 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
+  INTERACTION_CATEGORIES,
   SOCIAL_PROVIDERS,
   WORKFLOW_STATUSES,
+  type InteractionCategory,
   type InteractionType,
   type OrganizationId,
   type SocialProvider,
@@ -18,6 +20,7 @@ export interface InboxFilters {
   providers: SocialProvider[]
   accountIds: string[]
   statuses: WorkflowStatus[]
+  categories: InteractionCategory[]
   types: InteractionType[]
   date: DateFilter
   search: string
@@ -28,6 +31,7 @@ export const EMPTY_FILTERS: InboxFilters = {
   providers: [],
   accountIds: [],
   statuses: [],
+  categories: [],
   types: [],
   date: 'any',
   search: '',
@@ -65,6 +69,7 @@ export function useInboxFilters() {
       providers: parseList(searchParams.get('platform'), SOCIAL_PROVIDERS),
       accountIds: (searchParams.get('account') ?? '').split(',').filter(Boolean),
       statuses: parseList(searchParams.get('status'), WORKFLOW_STATUSES),
+      categories: parseList(searchParams.get('category'), INTERACTION_CATEGORIES),
       types: parseList(searchParams.get('type'), TYPES),
       date: parseOne(searchParams.get('date'), DATES, 'any'),
       search: searchParams.get('q') ?? '',
@@ -81,6 +86,7 @@ export function useInboxFilters() {
       if (next.providers.length > 0) params.set('platform', next.providers.join(','))
       if (next.accountIds.length > 0) params.set('account', next.accountIds.join(','))
       if (next.statuses.length > 0) params.set('status', next.statuses.join(','))
+      if (next.categories.length > 0) params.set('category', next.categories.join(','))
       if (next.types.length > 0) params.set('type', next.types.join(','))
       if (next.date !== 'any') params.set('date', next.date)
       if (next.search.trim().length > 0) params.set('q', next.search.trim())
@@ -104,6 +110,7 @@ export function activeFilterCount(filters: InboxFilters): number {
     filters.providers.length +
     filters.accountIds.length +
     filters.statuses.length +
+    filters.categories.length +
     filters.types.length +
     (filters.date === 'any' ? 0 : 1) +
     (filters.search.trim().length > 0 ? 1 : 0)
@@ -124,6 +131,7 @@ export function toInboxQuery(
     providers: filters.providers,
     connectedAccountIds: filters.accountIds,
     statuses: filters.statuses,
+    categories: filters.categories,
     types: filters.types,
     read: filters.view === 'unread' ? 'unread' : 'all',
     replied: filters.view === 'unreplied' ? 'unreplied' : 'all',

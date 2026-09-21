@@ -1,4 +1,5 @@
 import { CornerDownLeft, ImageIcon, Video } from 'lucide-react'
+import { CategoryBadge, VisibilityBadge } from '@/components/category-badge'
 import { AvatarWithPlatform, PlatformChip } from '@/components/platform/platform-chip'
 import { PLATFORM_LABELS_BY_PROVIDER } from '@/components/platform/platform-meta'
 import { StatusDot } from '@/components/status-indicator'
@@ -94,6 +95,15 @@ export function InteractionListItem({
             )}
           >
             {interaction.text}
+          </span>
+
+          {/* Classification gets its own line rather than competing for space
+              in the meta row: it is the first thing someone triaging a mixed
+              feed looks for, and the visibility badge only appears when the
+              comment is off the post or could not be taken off it. */}
+          <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <CategoryBadge category={interaction.category} />
+            <VisibilityBadge visibility={interaction.publicVisibility} />
           </span>
 
           <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-ink-muted">

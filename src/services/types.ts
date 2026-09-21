@@ -6,6 +6,7 @@ import type {
   ConnectedAccountId,
   DashboardMetrics,
   Interaction,
+  InteractionCategory,
   InteractionId,
   InteractionType,
   MetricRange,
@@ -44,6 +45,7 @@ export interface InboxQuery {
   providers?: SocialProvider[]
   connectedAccountIds?: ConnectedAccountId[]
   statuses?: WorkflowStatus[]
+  categories?: InteractionCategory[]
   types?: InteractionType[]
   read?: ReadFilter
   replied?: RepliedFilter
@@ -59,6 +61,7 @@ export interface InboxCounts {
   unread: number
   unreplied: number
   byStatus: Record<WorkflowStatus, number>
+  byCategory: Record<InteractionCategory, number>
   byProvider: Record<SocialProvider, number>
   byAccount: Record<ConnectedAccountId, number>
 }

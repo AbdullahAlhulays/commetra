@@ -214,4 +214,32 @@ describe('sending a reply', () => {
 
     expect(screen.getByRole('button', { name: 'إرسال' })).toBeDisabled()
   })
+
+  it('filters the list by category from the rail', async () => {
+    const { user } = renderInbox()
+    await waitFor(() => expect(listRowTexts().length).toBeGreaterThan(0))
+
+    await user.click(rail().getByRole('button', { name: /^إزعاج وسبام/ }))
+
+    await waitFor(() => {
+      const rows = listRowTexts()
+      expect(rows.length).toBeGreaterThan(0)
+      expect(rows.every((text) => text.includes('إزعاج وسبام'))).toBe(true)
+    })
+  })
+
+  it('marks a flagged comment as off the post, and as still live where it cannot be hidden', async () => {
+    const { user } = renderInbox()
+    await waitFor(() => expect(listRowTexts().length).toBeGreaterThan(0))
+
+    await user.click(rail().getByRole('button', { name: /^إزعاج وسبام/ }))
+
+    await waitFor(() => {
+      const rows = listRowTexts()
+      // Meta rows report the comment taken down; TikTok and X cannot, so they
+      // must not carry the badge that says it was.
+      expect(rows.some((text) => text.includes('مخفي عن المنشور'))).toBe(true)
+      expect(rows.some((text) => text.includes('لا تتيح المنصة إخفاءه'))).toBe(true)
+    })
+  })
 })

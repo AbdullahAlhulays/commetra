@@ -18,6 +18,14 @@ export interface ProviderCapabilities {
   canReplyToDirectMessages: boolean
   /** Whether the post/video a comment belongs to can be fetched for context. */
   canReadPostContext: boolean
+  /**
+   * Whether a comment can be hidden from the public post through the API.
+   *
+   * Meta exposes this on comments; the other two networks do not offer it to
+   * third-party apps. The inbox must say so rather than implying a flagged
+   * comment was taken off the post everywhere.
+   */
+  canHideComments: boolean
   /** Push/webhook delivery vs. scheduled polling. */
   supportsRealtimeUpdates: boolean
 }
@@ -36,6 +44,7 @@ export const PROVIDER_CAPABILITIES: Record<SocialProvider, ProviderCapabilities>
     canReplyToComments: true,
     canReplyToDirectMessages: true,
     canReadPostContext: true,
+    canHideComments: true,
     supportsRealtimeUpdates: true,
   },
   instagram: {
@@ -44,6 +53,7 @@ export const PROVIDER_CAPABILITIES: Record<SocialProvider, ProviderCapabilities>
     canReplyToComments: true,
     canReplyToDirectMessages: true,
     canReadPostContext: true,
+    canHideComments: true,
     supportsRealtimeUpdates: true,
   },
   tiktok: {
@@ -53,6 +63,8 @@ export const PROVIDER_CAPABILITIES: Record<SocialProvider, ProviderCapabilities>
     canReplyToComments: false,
     canReplyToDirectMessages: false,
     canReadPostContext: true,
+    // No third-party comment moderation on the tier we target.
+    canHideComments: false,
     supportsRealtimeUpdates: false,
   },
   x: {
@@ -61,6 +73,7 @@ export const PROVIDER_CAPABILITIES: Record<SocialProvider, ProviderCapabilities>
     canReplyToComments: true,
     canReplyToDirectMessages: true,
     canReadPostContext: true,
+    canHideComments: false,
     supportsRealtimeUpdates: false,
   },
 }

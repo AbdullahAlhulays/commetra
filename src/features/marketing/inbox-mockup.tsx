@@ -1,5 +1,6 @@
-import { Inbox, MailOpen, Search, SendHorizonal } from 'lucide-react'
+import { EyeOff, Inbox, MailOpen, Search, SendHorizonal } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { CategoryBadge } from '@/components/category-badge'
 import { AvatarWithPlatform, PlatformChip } from '@/components/platform/platform-chip'
 import {
   PLATFORM_LABELS_BY_PROVIDER,
@@ -7,7 +8,13 @@ import {
 } from '@/components/platform/platform-meta'
 import { StatusBadge, StatusDot } from '@/components/status-indicator'
 import { Avatar } from '@/components/ui/avatar'
-import type { SocialProvider, WorkflowStatus } from '@/domain'
+import {
+  PROVIDER_CAPABILITIES,
+  resolvePublicVisibility,
+  type InteractionCategory,
+  type SocialProvider,
+  type WorkflowStatus,
+} from '@/domain'
 import { cn } from '@/lib/cn'
 
 /**
@@ -41,8 +48,24 @@ interface MockRow {
   sentAt: string
   status: WorkflowStatus
   unread?: boolean
+  /** Assigned on arrival, exactly as the product does it. */
+  category: InteractionCategory
   /** The post or video the customer was replying to. */
   post: string
+}
+
+/**
+ * Whether the row shows as taken off the post.
+ *
+ * Read from the same domain resolver the product uses, so the marketing
+ * mockup cannot claim a comment was hidden on a network that gives us no way
+ * to hide it — TikTok and X rows will never show the badge.
+ */
+function isHidden(row: MockRow): boolean {
+  return (
+    resolvePublicVisibility(row.category, 'comment', PROVIDER_CAPABILITIES[row.provider]) ===
+    'hidden'
+  )
 }
 
 /**
@@ -60,13 +83,34 @@ const FEATURED_ROW: MockRow = {
   sentAt: 'قبل 6 دقائق',
   status: 'new',
   unread: true,
+  category: 'sales_intent',
   post: 'وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.',
 }
 
+/**
+ * Ordered newest first, like the real list.
+ *
+ * The mix is chosen so the first four rows — the ones above the fold — carry
+ * the whole story: a buying question, junk already off the post, a service
+ * question, and a complaint that was hidden too.
+ */
 const ROWS: MockRow[] = [
   FEATURED_ROW,
   {
     id: '2',
+    name: 'متجر المتابعين',
+    provider: 'instagram',
+    account: 'nawah.roastery',
+    accountName: 'نواة | المحمصة',
+    text: 'متابعين حقيقيين وتفاعل مضمون بأرخص الأسعار 🔥 تواصل معنا خاص.',
+    time: '9 د',
+    sentAt: 'قبل 9 دقائق',
+    status: 'new',
+    category: 'spam',
+    post: 'وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.',
+  },
+  {
+    id: '3',
     name: 'وليد العمري',
     provider: 'tiktok',
     account: 'nawah.coffee',
@@ -76,23 +120,25 @@ const ROWS: MockRow[] = [
     sentAt: 'قبل 15 دقيقة',
     status: 'new',
     unread: true,
+    category: 'customer_service',
     post: 'ثلاث خطوات لضبط درجة الطحن قبل تحضير الإسبريسو.',
   },
   {
-    id: '3',
+    id: '4',
     name: 'نوف الشمري',
     provider: 'facebook',
     account: 'nawah.sa',
     accountName: 'نواة | السعودية',
-    text: 'هل يمكن الطلب واستلامه من الفرع بدون توصيل؟',
+    text: 'الطلب تأخر يومين وما وصلني أي إشعار. هذي ثاني مرة تصير.',
     time: '28 د',
     sentAt: 'قبل 28 دقيقة',
     status: 'new',
     unread: true,
+    category: 'negative',
     post: 'فرع النخيل مفتوح من ٧ صباحًا إلى ١١ مساءً طوال أيام الأسبوع.',
   },
   {
-    id: '4',
+    id: '5',
     name: 'سلمان الفهد',
     provider: 'x',
     account: 'nawah_sa',
@@ -101,6 +147,7 @@ const ROWS: MockRow[] = [
     time: '34 د',
     sentAt: 'قبل 34 دقيقة',
     status: 'open',
+    category: 'other',
     post: 'الطلبات قبل الساعة ٢ ظهرًا تُشحن في نفس اليوم داخل الرياض.',
   },
 ]
@@ -168,9 +215,17 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
 
         <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-muted">{row.text}</p>
 
-        <div className="mt-1.5 flex items-center gap-1.5 text-2xs text-ink-muted">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-2xs text-ink-muted">
+          <CategoryBadge category={row.category} />
           <PlatformChip provider={row.provider} size="xs" />
-          <span className="latin truncate">@{row.account}</span>
+          {isHidden(row) ? (
+            <span className="flex items-center gap-1 text-ink-secondary">
+              <EyeOff className="size-3" />
+              مخفي
+            </span>
+          ) : (
+            <span className="latin truncate">@{row.account}</span>
+          )}
           <StatusDot status={row.status} className="ms-auto" />
         </div>
       </div>
@@ -193,6 +248,9 @@ function MockDetail({ row }: { row: MockRow }) {
             <span className="text-border-strong">·</span>
             <span className="truncate">{row.accountName}</span>
           </div>
+          <div className="mt-1.5">
+            <CategoryBadge category={row.category} />
+          </div>
         </div>
         <StatusBadge status={row.status} className="shrink-0" />
       </div>
@@ -204,6 +262,15 @@ function MockDetail({ row }: { row: MockRow }) {
           key={row.id}
           className="space-y-3 motion-safe:animate-content-in"
         >
+          {isHidden(row) ? (
+            <div className="flex items-start gap-2 rounded-lg border border-border bg-surface-sunken px-3 py-2.5">
+              <EyeOff className="mt-0.5 size-3 shrink-0 text-ink-muted" />
+              <p className="text-2xs leading-relaxed text-ink-secondary">
+                أُخفي عن المنشور — لا يراه بقية المتابعين، ويبقى هنا لك.
+              </p>
+            </div>
+          ) : null}
+
           <div className="rounded-lg border border-border bg-surface-subtle p-3">
             <p className="text-2xs font-medium text-ink-muted">المنشور المرتبط</p>
             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-secondary">

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { isUnreplied } from '@/domain'
+import { INTERACTION_CATEGORIES, isUnreplied, resolvePublicVisibility } from '@/domain'
 import { ServiceError } from '../errors'
 import { mockInboxService } from './inbox'
 import { getDb, resetDb } from './db'
@@ -273,5 +273,60 @@ describe('transient reply failure', () => {
 
     expect(reply.state).toBe('sent')
     expect(getDb().failedReplyAttempts.has(FLAKY_INTERACTION_ID)).toBe(true)
+  })
+})
+
+describe('category filtering', () => {
+  it('narrows the list to the requested categories', async () => {
+    const page = await mockInboxService.list({ ...base, categories: ['spam'], limit: 100 })
+
+    expect(page.items.length).toBeGreaterThan(0)
+    expect(page.items.every((item) => item.category === 'spam')).toBe(true)
+  })
+
+  it('seeds every category, so the rail is never a column of zeros', async () => {
+    const counts = await mockInboxService.counts(base)
+
+    for (const category of INTERACTION_CATEGORIES) {
+      expect(counts.byCategory[category]).toBeGreaterThan(0)
+    }
+  })
+
+  it('counts across categories add up to the unfiltered total', async () => {
+    const counts = await mockInboxService.counts(base)
+    const summed = INTERACTION_CATEGORIES.reduce(
+      (total, category) => total + counts.byCategory[category],
+      0,
+    )
+
+    expect(summed).toBe(counts.all)
+  })
+
+  it('ignores the category filter when counting, so the rail shows what a filter would reveal', async () => {
+    const counts = await mockInboxService.counts({ ...base, categories: ['spam'] })
+
+    expect(counts.byCategory.sales_intent).toBeGreaterThan(0)
+  })
+
+  it('stores a visibility that matches what the provider can actually do', async () => {
+    const page = await mockInboxService.list({ ...base, limit: 100 })
+
+    for (const item of page.items) {
+      expect(item.publicVisibility).toBe(
+        resolvePublicVisibility(item.category, item.type, item.capabilities),
+      )
+    }
+  })
+
+  it('hides flagged comments on Meta and flags them as unhideable elsewhere', async () => {
+    const page = await mockInboxService.list({ ...base, categories: ['spam'], limit: 100 })
+
+    const meta = page.items.filter((item) => item.provider === 'instagram' || item.provider === 'facebook')
+    const others = page.items.filter((item) => item.provider === 'tiktok' || item.provider === 'x')
+
+    expect(meta.length).toBeGreaterThan(0)
+    expect(others.length).toBeGreaterThan(0)
+    expect(meta.every((item) => item.publicVisibility === 'hidden')).toBe(true)
+    expect(others.every((item) => item.publicVisibility === 'cannot_hide')).toBe(true)
   })
 })
