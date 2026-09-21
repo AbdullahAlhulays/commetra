@@ -96,4 +96,13 @@ describe('LandingPage', () => {
     expect(screen.queryByText(/الإخفاء متاح على Instagram و Facebook/)).not.toBeInTheDocument()
   })
 
+  it('shows the three plans with a trial-first CTA', () => {
+    renderWithProviders(<LandingPage />)
+
+    for (const plan of ['تجربة مجانية', 'أساسي', 'احترافي']) {
+      expect(screen.getByRole('heading', { level: 3, name: plan })).toBeInTheDocument()
+    }
+    expect(screen.getByText('$50')).toBeInTheDocument()
+    expect(screen.getByText(/كل الخطط تبدأ بتجربة مجانية/)).toBeInTheDocument()
+  })
 })

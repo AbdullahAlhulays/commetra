@@ -36,6 +36,7 @@ import { useCycledIndex } from './use-cycled-index'
 const NAV_LINKS = [
   { id: 'how', label: 'كيف تعمل؟' },
   { id: 'use-cases', label: 'حالات الاستخدام' },
+  { id: 'pricing', label: 'الأسعار' },
   { id: 'faq', label: 'الأسئلة الشائعة' },
 ]
 
@@ -79,6 +80,60 @@ const USE_CASES = [
     icon: BarChart3,
     title: 'علامة تجارية',
     body: 'تعرف أي منصة تجلب أكثر التفاعلات، وأيها ما زال ينتظر ردًا.',
+  },
+]
+
+/*
+ * !! PLACEHOLDER PRICING — NOT APPROVED.
+ *
+ * These amounts are stand-ins so the page has a pricing section to lay out.
+ * No plan, price or limit here has been signed off, and every one of them
+ * must be replaced with the real commercial terms before this page is shown
+ * to customers. The feature lists are real — they describe capabilities the
+ * product actually has — but which tier each one belongs to is a guess.
+ */
+const PLANS = [
+  {
+    name: 'تجربة مجانية',
+    price: '$0',
+    period: '١٤ يومًا',
+    summary: 'جرّب كل شيء قبل أن تدفع.',
+    featured: false,
+    features: [
+      'المنصات الأربع كاملة',
+      'حساب واحد لكل منصة',
+      'تصنيف تلقائي لكل تفاعل',
+      'مستخدم واحد',
+      'بدون بطاقة ائتمانية',
+    ],
+  },
+  {
+    name: 'أساسي',
+    price: '$19',
+    period: 'شهريًا',
+    summary: 'لمتجر يديره شخص أو شخصان.',
+    featured: false,
+    features: [
+      'كل ما في التجربة المجانية',
+      'حسابان لكل منصة',
+      'ثلاثة مستخدمين',
+      'إخفاء السلبي والسبام',
+      'بحث وتصفية كاملة',
+    ],
+  },
+  {
+    name: 'احترافي',
+    price: '$50',
+    period: 'شهريًا',
+    summary: 'لفريق يتابع عدة حسابات.',
+    featured: true,
+    features: [
+      'كل ما في الأساسي',
+      'حسابات غير محدودة',
+      'عشرة مستخدمين',
+      'تقارير وحالات متابعة',
+      'دعم بأولوية',
+    ],
   },
 ]
 
@@ -560,9 +615,80 @@ function UseCases() {
   )
 }
 
+function Pricing() {
+  return (
+    <section id="pricing" className="scroll-mt-24 px-4 py-16 sm:px-6">
+      <div className="mx-auto max-w-5xl">
+        <Reveal className="text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            خطة تناسب حجم نشاطك
+          </h2>
+        </Reveal>
+
+        <Reveal as="ul" mode="children" className="mt-10 grid gap-4 lg:grid-cols-3">
+          {PLANS.map((plan) => (
+            <li
+              key={plan.name}
+              className={cn(
+                'group flex flex-col rounded-xl border bg-surface p-6 transition-[transform,box-shadow,border-color] duration-200 hover:shadow-md motion-safe:hover:-translate-y-1',
+                plan.featured ? 'border-brand-300 shadow-sm' : 'border-border hover:border-brand-300',
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <h3 className="text-md font-semibold text-ink">{plan.name}</h3>
+                {plan.featured ? (
+                  <span className="rounded-sm border border-brand-200 bg-brand-50 px-1.5 py-0.5 text-2xs font-medium text-brand-700">
+                    الأكثر اختيارًا
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{plan.summary}</p>
+
+              <p className="mt-5 flex items-baseline gap-2">
+                <span className="tabular text-3xl font-semibold tracking-tight text-ink">
+                  {plan.price}
+                </span>
+                <span className="text-xs text-ink-muted">{plan.period}</span>
+              </p>
+
+              <ul className="mt-5 flex-1 space-y-2.5 border-t border-border pt-5">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2">
+                    <Check className="mt-1 size-3.5 shrink-0 text-brand-600" aria-hidden />
+                    <span className="text-sm leading-relaxed text-ink-secondary">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                variant={plan.featured ? 'primary' : 'secondary'}
+                size="md"
+                className="mt-6 w-full"
+                asChild
+              >
+                <Link to="/register">ابدأ مجانًا</Link>
+              </Button>
+            </li>
+          ))}
+        </Reveal>
+
+        <Reveal delay={140}>
+          <p className="mt-6 text-center text-xs text-ink-muted">
+            كل الخطط تبدأ بتجربة مجانية، ويمكنك الإلغاء في أي وقت.
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
 function Faq() {
   return (
-    <section id="faq" className="scroll-mt-24 px-4 py-16 sm:px-6">
+    <section
+      id="faq"
+      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
+    >
       <div className="mx-auto max-w-2xl">
         <Reveal>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">الأسئلة الشائعة</h2>
@@ -732,6 +858,7 @@ export function LandingPage() {
         <HowItWorks />
         <BeforeAfter />
         <UseCases />
+        <Pricing />
         <Faq />
         <FinalCta />
       </main>
