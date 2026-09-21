@@ -1,6 +1,9 @@
 import {
+  ArrowDown,
   ArrowLeft,
+  BarChart3,
   Check,
+  Coffee,
   EyeOff,
   FileText,
   Inbox,
@@ -8,7 +11,10 @@ import {
   ListChecks,
   ScanLine,
   Search,
+  ShoppingCart,
+  Store,
   Tags,
+  Users,
   X as CrossIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -27,15 +33,14 @@ import { Button } from '@/components/ui/button'
 import {
   INTERACTION_CATEGORIES,
   INTERACTION_CATEGORY_DESCRIPTIONS,
-  PROVIDER_CAPABILITIES,
-  type ProviderCapabilities,
+  type InteractionCategory,
 } from '@/domain'
 import { cn } from '@/lib/cn'
 import { DetailMockup, InboxMockup } from './inbox-mockup'
 import { Reveal } from './reveal'
+import { useCycledIndex } from './use-cycled-index'
 
 const NAV_LINKS = [
-  { id: 'categories', label: 'التصنيف' },
   { id: 'how', label: 'كيف تعمل؟' },
   { id: 'features', label: 'المميزات' },
   { id: 'use-cases', label: 'حالات الاستخدام' },
@@ -86,7 +91,7 @@ const FEATURES = [
   {
     icon: Tags,
     title: 'تصنيف تلقائي لكل تفاعل',
-    body: 'نية شرائية، خدمة عملاء، تعليق سلبي، إزعاج — قبل أن تفتحه.',
+    body: 'فرصة بيع، خدمة عملاء، تعليق سلبي، إزعاج — قبل أن تفتحه.',
   },
   {
     icon: EyeOff,
@@ -102,22 +107,27 @@ const FEATURES = [
 
 const USE_CASES = [
   {
+    icon: ShoppingCart,
     title: 'متجر إلكتروني',
     body: 'أسئلة التوفر والمقاسات والشحن تصلك في مكان واحد بدل التنقل بين ثلاثة تطبيقات.',
   },
   {
+    icon: Store,
     title: 'متجر تجزئة',
     body: 'استفسارات الفروع وأوقات العمل مع سياق المنشور الذي جاءت منه.',
   },
   {
+    icon: Coffee,
     title: 'مطعم أو مقهى',
     body: 'طلبات الحجز وملاحظات الزوار تُتابَع حتى تُغلق، لا تضيع بين الإشعارات.',
   },
   {
+    icon: Users,
     title: 'فريق خدمة عملاء',
     body: 'شخص واحد يكفي لمتابعة كل القنوات، وفريق كامل يعمل على نفس الصندوق حين يكبر حجم التفاعلات.',
   },
   {
+    icon: BarChart3,
     title: 'علامة تجارية',
     body: 'تعرف أي منصة تجلب أكثر التفاعلات، وأيها ما زال ينتظر ردًا.',
   },
@@ -183,30 +193,10 @@ const TRANSFORMATION = [
     after: 'المنشور أو الفيديو أمامك وأنت تكتب الرد',
   },
   {
-    before: 'لا تعرف ما الذي رد عليه زميلك',
-    after: 'حالة لكل تفاعل: جديد، مفتوح، بانتظار، تم الحل',
-  },
-  {
-    before: 'لا طريقة سريعة لمعرفة ما بقي دون رد',
-    after: 'بحث وتصفية حسب المنصة أو التصنيف أو الحالة',
+    before: 'تعليق يمر بلا رد ولا أحد ينتبه',
+    after: 'كل تفاعل له حالة حتى يُغلق',
   },
 ]
-
-/**
- * One line per platform, read off the capability matrix instead of written by
- * hand. If TikTok's access tier changes, this card changes with it rather
- * than quietly overpromising on the homepage.
- */
-function channelSummary(capabilities: ProviderCapabilities): string {
-  const surfaces = [
-    capabilities.canReadComments ? 'التعليقات' : null,
-    capabilities.canReadDirectMessages ? 'الرسائل' : null,
-  ].filter((surface): surface is string => surface !== null)
-
-  const canReply = capabilities.canReplyToComments || capabilities.canReplyToDirectMessages
-
-  return `${surfaces.join(' و')} — ${canReply ? 'قراءة وردّ' : 'قراءة فقط'}`
-}
 
 /**
  * Tracks which section the visitor is reading, for the navbar.
@@ -241,11 +231,31 @@ function useActiveSection(ids: string[]): string | null {
   return active
 }
 
+/** True once the page has moved at all, so the navbar can gain an edge. */
+function useIsScrolled(): boolean {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return scrolled
+}
+
 function Navbar() {
   const active = useActiveSection(NAV_SECTION_IDS)
+  const scrolled = useIsScrolled()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-canvas/95 backdrop-blur-sm">
+    <header
+      className={cn(
+        'sticky top-0 z-40 border-b bg-canvas/95 backdrop-blur-sm transition-[box-shadow,border-color] duration-200',
+        scrolled ? 'border-border shadow-sm' : 'border-transparent',
+      )}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
         <Link to="/" className="rounded-md">
           <Logo />
@@ -292,8 +302,7 @@ function Hero() {
 
         <Reveal delay={80}>
           <p className="mx-auto mt-4 max-w-xl text-md leading-relaxed text-ink-secondary sm:text-lg">
-            يجمع Comment التعليقات والرسائل من Instagram و Facebook و TikTok و X في صندوق وارد واحد،
-            ويصنّف كل واحدة تلقائيًا، فتقرأ وترد من منصة واحدة ومكان واحد دون أن يفوتك عميل.
+            كل تعليق ورسالة من Instagram و Facebook و TikTok و X في صندوق واحد، مصنّفة لك تلقائيًا.
           </p>
         </Reveal>
 
@@ -334,15 +343,16 @@ function Channels() {
           {PLATFORM_ORDER.map((provider) => (
             <li
               key={provider}
-              className="rounded-xl border border-border bg-canvas p-5 text-center transition-colors duration-200 hover:border-border-strong"
+              className="group rounded-xl border border-border bg-canvas p-5 text-center transition-[transform,box-shadow,border-color] duration-200 hover:border-brand-300 hover:shadow-md motion-safe:hover:-translate-y-1"
             >
-              <PlatformChip provider={provider} size="lg" className="mx-auto" />
+              <PlatformChip
+                provider={provider}
+                size="lg"
+                className="mx-auto transition-transform duration-200 motion-safe:group-hover:scale-110"
+              />
               <h3 className="latin mt-3.5 text-md font-semibold text-ink">
                 {PLATFORM_LABELS_BY_PROVIDER[provider]}
               </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
-                {channelSummary(PROVIDER_CAPABILITIES[provider])}
-              </p>
             </li>
           ))}
         </Reveal>
@@ -362,60 +372,107 @@ function Channels() {
   )
 }
 
+/**
+ * One real-looking comment per category.
+ *
+ * The section shows the classifier working on an actual comment rather than
+ * describing it in the abstract, which is the whole difference between a
+ * feature list and understanding what the product does.
+ */
+const CATEGORY_SAMPLES: Record<InteractionCategory, string> = {
+  sales_intent: 'حبوب الإثيوبي متوفرة الحين؟ أبي أطلب كيلو.',
+  customer_service: 'في خلل في الموقع، ما أقدر أكمل الطلب.',
+  negative: 'الطلب تأخر يومين وما وصلني أي إشعار.',
+  spam: 'متابعين حقيقيين بأرخص الأسعار 🔥 تواصل خاص.',
+  other: 'القهوة وصلت اليوم والرائحة خيالية 🤎 شكرًا لكم.',
+}
+
+const CATEGORY_CYCLE_MS = 2600
+
 function Categories() {
+  const [paused, setPaused] = useState(false)
+  const activeIndex = useCycledIndex(INTERACTION_CATEGORIES.length, {
+    paused,
+    intervalMs: CATEGORY_CYCLE_MS,
+  })
+  const active = INTERACTION_CATEGORIES[activeIndex] ?? 'sales_intent'
+
   return (
     <section id="categories" className="scroll-mt-24 px-4 py-16 sm:px-6">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-2xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            كل تعليق ورسالة يُصنَّف قبل أن تفتحه
+            كل تعليق يُصنَّف قبل أن تفتحه
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-secondary">
-            جمع كل المنصات في مكان واحد هو نصف الحل. النصف الآخر أن تعرف من أول نظرة ما الذي
-            يستحق ردًا الآن، فلا يضيع عميل جاهز للشراء بين مئة تعليق.
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-ink-secondary">
+            فتعرف من أول نظرة ما الذي يستحق ردًا الآن.
           </p>
         </Reveal>
 
-        {/* Labels and descriptions come from the domain, so this list is the
-            product's own taxonomy rather than a marketing paraphrase of it. */}
-        <Reveal
-          as="ul"
-          mode="children"
-          className="mt-10 divide-y divide-border rounded-xl border border-border bg-surface"
-        >
-          {INTERACTION_CATEGORIES.map((category) => (
-            <li
-              key={category}
-              className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:gap-6"
-            >
-              <span className="shrink-0 sm:w-32">
-                <CategoryBadge category={category} />
-              </span>
-              <p className="text-sm leading-relaxed text-ink-secondary">
-                {INTERACTION_CATEGORY_DESCRIPTIONS[category]}
+        <Reveal delay={80} className="mt-10">
+          {/* Hovering means someone is reading a specific row — hold the cycle. */}
+          <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+            <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
+              <p className="text-2xs font-medium text-ink-faint">تعليق جديد وصل الآن</p>
+              <p
+                key={active}
+                className="mt-1.5 text-sm leading-relaxed text-ink motion-safe:animate-content-in"
+              >
+                {CATEGORY_SAMPLES[active]}
               </p>
-            </li>
-          ))}
+            </div>
+
+            <span className="flex justify-center py-2" aria-hidden>
+              <ArrowDown className="size-4 text-ink-faint" />
+            </span>
+
+            <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+              {INTERACTION_CATEGORIES.map((category) => {
+                const isActive = category === active
+                return (
+                  <li
+                    key={category}
+                    className={cn(
+                      'relative flex flex-col gap-2 p-4 transition-colors duration-300 sm:flex-row sm:items-center sm:gap-5',
+                      isActive ? 'bg-brand-50/60' : 'bg-surface',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'absolute inset-y-0 start-0 w-0.5 bg-brand transition-opacity duration-300',
+                        isActive ? 'opacity-100' : 'opacity-0',
+                      )}
+                      aria-hidden
+                    />
+                    <span className="shrink-0 sm:w-28">
+                      <CategoryBadge category={category} />
+                    </span>
+                    <p className="text-sm leading-relaxed text-ink-secondary">
+                      {INTERACTION_CATEGORY_DESCRIPTIONS[category]}
+                    </p>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
         </Reveal>
 
+        {/* The one red surface on the page. It marks the claim a visitor is
+            most likely to have been burned by, so it should stop the eye. */}
         <Reveal
           delay={140}
-          className="mt-6 flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 sm:flex-row sm:items-start sm:gap-5"
+          className="mt-6 flex flex-col gap-4 rounded-xl border border-danger-border bg-danger-surface p-6 sm:flex-row sm:items-center sm:gap-5"
         >
-          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-solid text-white">
+          <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-danger text-white">
             <EyeOff className="size-5" aria-hidden />
           </span>
           <div>
-            <h3 className="text-md font-semibold text-ink">
+            <h3 className="text-md font-semibold text-danger-strong">
               السلبي والسبام يختفي عن منشورك، لا عن صندوقك
             </h3>
             <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">
-              التعليقات المسيئة والإعلانات والشكاوى تُخفى عن المنشور تلقائيًا، فلا يراها بقية
-              المتابعين. تبقى عندك في الصندوق كاملة، تقرأها وترد عليها متى شئت.
-            </p>
-            <p className="mt-2.5 text-xs leading-relaxed text-ink-muted">
-              الإخفاء متاح على Instagram و Facebook. على TikTok و X نصنّفها ونعلّمها لك بوضوح،
-              لأن المنصتين لا تتيحان إخفاء التعليقات من خارج تطبيقهما.
+              تُخفى عن المنشور تلقائيًا فلا يراها بقية المتابعين، وتبقى عندك تقرأها وترد عليها متى
+              شئت.
             </p>
           </div>
         </Reveal>
@@ -434,12 +491,14 @@ function HowItWorks() {
           </h2>
         </Reveal>
 
-        <Reveal as="ol" mode="children" className="mt-8 grid gap-8 md:grid-cols-3 md:gap-6">
+        <Reveal as="ol" mode="children" className="group mt-8 grid gap-8 md:grid-cols-3 md:gap-6">
           {STEPS.map((step, index) => (
             <li key={step.title} className="relative md:pt-5">
               {/* Hairline connector, not a row of boxes. */}
+              {/* Drawn from the inline start, so in RTL it runs right to left
+                  with the reading order. Reduced motion gets it full width. */}
               <span
-                className="absolute inset-x-0 top-0 hidden h-px bg-border md:block"
+                className="absolute inset-x-0 top-0 hidden h-px origin-right bg-border transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] md:block motion-safe:scale-x-0 motion-safe:group-data-[reveal=true]:scale-x-100"
                 aria-hidden
               />
               <span
@@ -470,11 +529,6 @@ function ProductShowcase() {
           <h2 className="text-2xl font-semibold tracking-tight text-ink">
             تعرف ما الذي يرد عليه العميل قبل أن تكتب
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
-            كل تفاعل يصل ومعه سياقه: المنشور أو الفيديو الذي جاء منه، الحساب الذي استقبله، وحالة
-            المتابعة. الرد يُكتب من نفس الشاشة دون فتح نافذة منفصلة.
-          </p>
-
           <dl className="mt-6 space-y-4 border-t border-border pt-6">
             <div>
               <dt className="text-sm font-medium text-ink">سياق المنشور مرفق دائمًا</dt>
@@ -585,9 +639,12 @@ function Features() {
             {FEATURES.map((feature) => (
               <li
                 key={feature.title}
-                className="flex gap-3 bg-surface p-5 transition-colors duration-200 hover:bg-surface-subtle"
+                className="group flex gap-3 bg-surface p-5 transition-colors duration-200 hover:bg-surface-subtle"
               >
-                <feature.icon className="mt-0.5 size-4 shrink-0 text-brand-600" aria-hidden />
+                <feature.icon
+                  className="mt-0.5 size-4 shrink-0 text-brand-600 transition-transform duration-200 motion-safe:group-hover:scale-125"
+                  aria-hidden
+                />
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold text-ink">{feature.title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-ink-muted">{feature.body}</p>
@@ -615,15 +672,21 @@ function UseCases() {
         </Reveal>
 
         <Reveal
-          as="dl"
+          as="ul"
           mode="children"
-          className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           {USE_CASES.map((item) => (
-            <div key={item.title} className="border-t border-border pt-4">
-              <dt className="text-sm font-semibold text-ink">{item.title}</dt>
-              <dd className="mt-1.5 text-sm leading-relaxed text-ink-muted">{item.body}</dd>
-            </div>
+            <li
+              key={item.title}
+              className="group rounded-xl border border-border bg-canvas p-5 transition-[transform,box-shadow,border-color] duration-200 hover:border-brand-300 hover:shadow-md motion-safe:hover:-translate-y-1"
+            >
+              <span className="grid size-9 place-items-center rounded-lg border border-border bg-surface text-brand-600 transition-colors duration-200 group-hover:border-brand-200 group-hover:bg-brand-50">
+                <item.icon className="size-4" aria-hidden />
+              </span>
+              <h3 className="mt-3.5 text-sm font-semibold text-ink">{item.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{item.body}</p>
+            </li>
           ))}
         </Reveal>
       </div>

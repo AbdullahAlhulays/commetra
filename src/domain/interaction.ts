@@ -48,7 +48,7 @@ export const INTERACTION_CATEGORIES = [
 export type InteractionCategory = (typeof INTERACTION_CATEGORIES)[number]
 
 export const INTERACTION_CATEGORY_LABELS: Record<InteractionCategory, string> = {
-  sales_intent: 'نية شرائية',
+  sales_intent: 'فرصة بيع',
   customer_service: 'خدمة عملاء',
   negative: 'تعليق سلبي',
   spam: 'إزعاج وسبام',

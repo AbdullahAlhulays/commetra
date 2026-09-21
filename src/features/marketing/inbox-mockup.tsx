@@ -1,5 +1,5 @@
 import { EyeOff, Inbox, MailOpen, Search, SendHorizonal } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { CategoryBadge } from '@/components/category-badge'
 import { AvatarWithPlatform, PlatformChip } from '@/components/platform/platform-chip'
 import {
@@ -16,6 +16,7 @@ import {
   type WorkflowStatus,
 } from '@/domain'
 import { cn } from '@/lib/cn'
+import { useCycledIndex } from './use-cycled-index'
 
 /**
  * A static replica of the Unified Inbox for the marketing page.
@@ -40,7 +41,6 @@ interface MockRow {
   provider: SocialProvider
   /** The connected business account that received the interaction. */
   account: string
-  accountName: string
   text: string
   /** Compact form for the list row. */
   time: string
@@ -77,7 +77,6 @@ const FEATURED_ROW: MockRow = {
   name: 'منيرة القحطاني',
   provider: 'instagram',
   account: 'nawah.roastery',
-  accountName: 'نواة | المحمصة',
   text: 'حبوب الإثيوبي المذكورة في الفيديو متوفرة الحين؟ أبي أطلب كيلو.',
   time: '6 د',
   sentAt: 'قبل 6 دقائق',
@@ -101,7 +100,6 @@ const ROWS: MockRow[] = [
     name: 'متجر المتابعين',
     provider: 'instagram',
     account: 'nawah.roastery',
-    accountName: 'نواة | المحمصة',
     text: 'متابعين حقيقيين وتفاعل مضمون بأرخص الأسعار 🔥 تواصل معنا خاص.',
     time: '9 د',
     sentAt: 'قبل 9 دقائق',
@@ -114,8 +112,7 @@ const ROWS: MockRow[] = [
     name: 'وليد العمري',
     provider: 'tiktok',
     account: 'nawah.coffee',
-    accountName: 'نواة | القهوة',
-    text: 'وش اسم الطاحونة المستخدمة في الفيديو؟',
+    text: 'في خلل في الموقع، ما أقدر أكمل الطلب. تمنيت تشوفونه.',
     time: '15 د',
     sentAt: 'قبل 15 دقيقة',
     status: 'new',
@@ -128,7 +125,6 @@ const ROWS: MockRow[] = [
     name: 'نوف الشمري',
     provider: 'facebook',
     account: 'nawah.sa',
-    accountName: 'نواة | السعودية',
     text: 'الطلب تأخر يومين وما وصلني أي إشعار. هذي ثاني مرة تصير.',
     time: '28 د',
     sentAt: 'قبل 28 دقيقة',
@@ -142,7 +138,6 @@ const ROWS: MockRow[] = [
     name: 'سلمان الفهد',
     provider: 'x',
     account: 'nawah_sa',
-    accountName: 'نواة',
     text: 'طلبت أمس ووصل اليوم الصباح. سرعة ممتازة 👌',
     time: '34 د',
     sentAt: 'قبل 34 دقيقة',
@@ -159,26 +154,6 @@ const RAIL_ROWS = [
 
 /** Long enough to read the conversation before it moves on. */
 const CYCLE_MS = 4800
-
-/**
- * Advances the selected row on a timer, unless the visitor is hovering the
- * mockup or has asked for reduced motion.
- */
-function useCycledSelection(length: number, paused: boolean): number {
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    if (paused || length < 2) return
-    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return
-    }
-
-    const timer = setInterval(() => setIndex((current) => (current + 1) % length), CYCLE_MS)
-    return () => clearInterval(timer)
-  }, [length, paused])
-
-  return index
-}
 
 function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
   return (
@@ -216,8 +191,8 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
         <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-muted">{row.text}</p>
 
         <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-2xs text-ink-muted">
-          <CategoryBadge category={row.category} />
           <PlatformChip provider={row.provider} size="xs" />
+          <CategoryBadge category={row.category} />
           {isHidden(row) ? (
             <span className="flex items-center gap-1 text-ink-secondary">
               <EyeOff className="size-3" />
@@ -245,10 +220,6 @@ function MockDetail({ row }: { row: MockRow }) {
           <div className="mt-0.5 flex items-center gap-1.5 text-2xs text-ink-muted">
             <PlatformChip provider={row.provider} size="xs" />
             <span className="latin">{PLATFORM_LABELS_BY_PROVIDER[row.provider]}</span>
-            <span className="text-border-strong">·</span>
-            <span className="truncate">{row.accountName}</span>
-          </div>
-          <div className="mt-1.5">
             <CategoryBadge category={row.category} />
           </div>
         </div>
@@ -319,7 +290,7 @@ export function DetailMockup({ className }: { className?: string }) {
 
 export function InboxMockup({ className }: { className?: string }) {
   const [paused, setPaused] = useState(false)
-  const selected = useCycledSelection(ROWS.length, paused)
+  const selected = useCycledIndex(ROWS.length, { paused, intervalMs: CYCLE_MS })
   const active = ROWS[selected] ?? FEATURED_ROW
 
   return (

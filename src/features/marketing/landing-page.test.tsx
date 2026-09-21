@@ -11,7 +11,7 @@ describe('LandingPage', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: /كل تعليقات ورسائل عملائك في مكان واحد/ }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/فتقرأ وترد من منصة واحدة ومكان واحد/)).toBeInTheDocument()
+    expect(screen.getByText(/في صندوق واحد، مصنّفة لك تلقائيًا/)).toBeInTheDocument()
   })
 
   it('shows every revealed block when IntersectionObserver is unavailable', () => {
@@ -32,17 +32,6 @@ describe('LandingPage', () => {
     for (const platform of ['Instagram', 'Facebook', 'TikTok', 'X']) {
       expect(screen.getByRole('heading', { level: 3, name: platform })).toBeInTheDocument()
     }
-  })
-
-  it('states TikTok as read-only, matching the capability matrix', () => {
-    // The card reads off PROVIDER_CAPABILITIES, so this fails the day someone
-    // flips TikTok's reply capability without revisiting the marketing claim.
-    expect(PROVIDER_CAPABILITIES.tiktok.canReplyToComments).toBe(false)
-
-    renderWithProviders(<LandingPage />)
-
-    expect(screen.getByText(/التعليقات — قراءة فقط/)).toBeInTheDocument()
-    expect(screen.getAllByText(/التعليقات والرسائل — قراءة وردّ/).length).toBeGreaterThan(0)
   })
 
   it('contrasts today against the product, line for line', () => {
@@ -83,17 +72,28 @@ describe('LandingPage', () => {
     }
   })
 
-  it('says hiding is Meta-only rather than implying it works everywhere', () => {
-    // The claim is the reason this caveat exists: TikTok and X give us no way
-    // to take a comment off a post, and the page must not pretend otherwise.
+  it('keeps the platform limitation on the page, in the FAQ', async () => {
+    // The cards no longer spell capabilities out — the page is deliberately
+    // simpler now — so the FAQ is the one place that still has to be honest
+    // about the two networks that cannot hide a comment at all.
     expect(PROVIDER_CAPABILITIES.tiktok.canHideComments).toBe(false)
     expect(PROVIDER_CAPABILITIES.x.canHideComments).toBe(false)
 
+    const { user } = renderWithProviders(<LandingPage />)
+    await user.click(screen.getByRole('button', { name: /ماذا يحدث للتعليقات السلبية والسبام؟/ }))
+
+    expect(
+      await screen.findByText(/لا تتيحان إخفاء التعليقات من خارج تطبيقهما/),
+    ).toBeInTheDocument()
+  })
+
+  it('draws attention to the hiding claim without the caveat crowding it', () => {
     renderWithProviders(<LandingPage />)
 
-    expect(screen.getByText(/الإخفاء متاح على Instagram و Facebook/)).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: /السلبي والسبام يختفي عن منشورك، لا عن صندوقك/ }),
     ).toBeInTheDocument()
+    expect(screen.queryByText(/الإخفاء متاح على Instagram و Facebook/)).not.toBeInTheDocument()
   })
+
 })

@@ -358,7 +358,7 @@ const SEEDS: InteractionSeed[] = [
     authorHandle: 'waleed.om',
     text: 'وش اسم الطاحونة المستخدمة في الفيديو؟',
     at: 15,
-    category: 'customer_service',
+    category: 'sales_intent',
     status: 'new',
     context: {
       excerpt: 'طريقة تحضير V60 خطوة بخطوة ☕️',

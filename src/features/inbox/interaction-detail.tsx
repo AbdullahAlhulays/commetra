@@ -266,6 +266,7 @@ export function InteractionDetail({
               <PlatformChip provider={interaction.provider} size="xs" />
               {PLATFORM_LABELS_BY_PROVIDER[interaction.provider]}
             </span>
+            <CategoryBadge category={interaction.category} />
             {account ? (
               <>
                 <span aria-hidden className="text-border-strong">
@@ -278,10 +279,6 @@ export function InteractionDetail({
               ·
             </span>
             <span>{INTERACTION_TYPE_LABELS[interaction.type]}</span>
-          </div>
-
-          <div className="mt-1.5">
-            <CategoryBadge category={interaction.category} />
           </div>
         </div>
 

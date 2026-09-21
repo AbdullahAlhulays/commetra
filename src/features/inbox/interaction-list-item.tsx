@@ -97,20 +97,18 @@ export function InteractionListItem({
             {interaction.text}
           </span>
 
-          {/* Classification gets its own line rather than competing for space
-              in the meta row: it is the first thing someone triaging a mixed
-              feed looks for, and the visibility badge only appears when the
-              comment is off the post or could not be taken off it. */}
-          <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            <CategoryBadge category={interaction.category} />
-            <VisibilityBadge visibility={interaction.publicVisibility} />
-          </span>
-
+          {/* Origin and classification read as one line: "this came from
+              TikTok, and it is a sales opportunity". The visibility badge
+              only joins them when the comment is off the post, or could not
+              be taken off it. */}
           <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-ink-muted">
             <span className="flex items-center gap-1">
               <PlatformChip provider={interaction.provider} size="xs" />
               <span>{PLATFORM_LABELS_BY_PROVIDER[interaction.provider]}</span>
             </span>
+
+            <CategoryBadge category={interaction.category} />
+            <VisibilityBadge visibility={interaction.publicVisibility} />
 
             {account ? (
               <>
