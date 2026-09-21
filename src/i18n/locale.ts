@@ -17,7 +17,16 @@ export const LOCALE_DIRECTIONS: Record<Locale, 'rtl' | 'ltr'> = {
   en: 'ltr',
 }
 
-/** Shown in the switcher, each in its own language rather than translated. */
+/**
+ * The switcher shows codes, which stay short at any width and are read the
+ * same way in both languages. The full names are still needed for the
+ * accessible label — "EN" on its own tells a screen-reader user nothing.
+ */
+export const LOCALE_CODES: Record<Locale, string> = {
+  ar: 'AR',
+  en: 'EN',
+}
+
 export const LOCALE_NAMES: Record<Locale, string> = {
   ar: 'العربية',
   en: 'English',

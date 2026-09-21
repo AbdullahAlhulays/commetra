@@ -178,17 +178,20 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
       </AvatarWithPlatform>
 
       <div className="min-w-0 flex-1">
+        {/* The handle sits with the name, where a reader looks for "who is
+            this": the person, then the account they reached. */}
         <div className="flex items-baseline gap-1.5">
           <span
             className={cn(
-              'min-w-0 flex-1 truncate text-sm',
+              'min-w-0 truncate text-sm',
               row.unread ? 'font-semibold text-ink' : 'font-medium text-ink-secondary',
             )}
           >
             {row.name}
           </span>
+          <span className="latin min-w-0 truncate text-2xs text-ink-faint">@{row.account}</span>
           {row.unread ? <span className="size-1.5 shrink-0 rounded-full bg-brand" /> : null}
-          <span className="tabular shrink-0 text-2xs text-ink-faint">
+          <span className="tabular ms-auto shrink-0 text-2xs text-ink-faint">
             {t.mockup.minutesShort(row.minutes)}
           </span>
         </div>
@@ -203,9 +206,7 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
               <EyeOff className="size-3" />
               {t.mockup.hidden}
             </span>
-          ) : (
-            <span className="latin truncate">@{row.account}</span>
-          )}
+          ) : null}
           <StatusDot status={row.status} className="ms-auto" />
         </div>
       </div>

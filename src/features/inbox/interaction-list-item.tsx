@@ -65,15 +65,26 @@ export function InteractionListItem({
         </AvatarWithPlatform>
 
         <span className="min-w-0 flex-1">
-          <span className="flex items-baseline gap-2">
+          {/* The receiving account sits with the name, where a reader looks
+              for "who is this": the customer, then the account they reached. */}
+          <span className="flex items-baseline gap-1.5">
             <span
               className={cn(
-                'min-w-0 flex-1 truncate text-sm',
+                'min-w-0 truncate text-sm',
                 interaction.isRead ? 'font-medium text-ink-secondary' : 'font-semibold text-ink',
               )}
             >
               {interaction.author.displayName}
             </span>
+
+            {account ? (
+              <span
+                className="latin min-w-0 truncate text-2xs text-ink-faint"
+                title={account.displayName}
+              >
+                @{account.handle}
+              </span>
+            ) : null}
 
             {!interaction.isRead ? (
               <span className="size-1.5 shrink-0 rounded-full bg-brand" aria-label="غير مقروء" />
@@ -82,7 +93,7 @@ export function InteractionListItem({
             <time
               dateTime={interaction.createdAt}
               title={formatAbsolute(interaction.createdAt)}
-              className="tabular shrink-0 text-2xs text-ink-faint"
+              className="tabular ms-auto shrink-0 text-2xs text-ink-faint"
             >
               {formatCompactTime(interaction.createdAt)}
             </time>
@@ -109,17 +120,6 @@ export function InteractionListItem({
 
             <CategoryBadge category={interaction.category} />
             <VisibilityBadge visibility={interaction.publicVisibility} />
-
-            {account ? (
-              <>
-                <span aria-hidden className="text-border-strong">
-                  ·
-                </span>
-                <span className="latin max-w-28 truncate" title={account.displayName}>
-                  @{account.handle}
-                </span>
-              </>
-            ) : null}
 
             <span aria-hidden className="text-border-strong">
               ·
