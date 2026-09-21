@@ -6,6 +6,7 @@ import {
   ScanLine,
   Search,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/brand/logo'
 import { PlatformChip } from '@/components/platform/platform-chip'
@@ -17,19 +18,21 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/cn'
 import { DetailMockup, InboxMockup } from './inbox-mockup'
+import { Reveal } from './reveal'
 
 const NAV_LINKS = [
-  { href: '#how', label: 'كيف تعمل؟' },
-  { href: '#features', label: 'المميزات' },
-  { href: '#use-cases', label: 'حالات الاستخدام' },
-  { href: '#faq', label: 'الأسئلة الشائعة' },
+  { id: 'how', label: 'كيف تعمل؟' },
+  { id: 'features', label: 'المميزات' },
+  { id: 'use-cases', label: 'حالات الاستخدام' },
+  { id: 'faq', label: 'الأسئلة الشائعة' },
 ]
 
 const STEPS = [
   {
     title: 'اربط حساباتك',
-    body: 'سجّل الدخول لكل منصة مرة واحدة وامنح Comment صلاحية قراءة التعليقات والرسائل. يمكنك ربط أكثر من حساب لكل منصة.',
+    body: 'سجّل الدخول لكل منصة مرة واحدة وامنح Comment صلاحية قراءة التعليقات والرسائل.',
   },
   {
     title: 'استقبل كل شيء في مكان واحد',
@@ -45,7 +48,7 @@ const FEATURES = [
   {
     icon: Inbox,
     title: 'صندوق وارد موحّد',
-    body: 'تعليقات ورسائل أربع منصات في قائمة واحدة مرتبة بالأحدث.',
+    body: 'كل ما يصل حساباتك على المنصات الأربع يظهر في قائمة واحدة.',
   },
   {
     icon: ScanLine,
@@ -88,11 +91,11 @@ const USE_CASES = [
     body: 'طلبات الحجز وملاحظات الزوار تُتابَع حتى تُغلق، لا تضيع بين الإشعارات.',
   },
   {
-    title: 'نشاط محلي',
-    body: 'شخص واحد يكفي لمتابعة كل القنوات، بوقت أقل وبدون إعداد معقّد.',
+    title: 'فريق خدمة عملاء',
+    body: 'شخص واحد يكفي لمتابعة كل القنوات، وفريق كامل يعمل على نفس الصندوق حين يكبر حجم التفاعلات.',
   },
   {
-    title: 'علامة تجارية صغيرة',
+    title: 'علامة تجارية',
     body: 'تعرف أي منصة تجلب أكثر التفاعلات، وأيها ما زال ينتظر ردًا.',
   },
 ]
@@ -102,11 +105,6 @@ const FAQ = [
     question: 'ما المنصات المدعومة؟',
     answer:
       'Instagram و Facebook و TikTok و X في هذه النسخة. نضيف منصات أخرى بحسب ما تحتاجه المتاجر فعليًا.',
-  },
-  {
-    question: 'هل أستطيع ربط أكثر من حساب؟',
-    answer:
-      'نعم. يمكنك ربط أكثر من حساب لكل منصة، ويظهر اسم الحساب المستقبِل بجانب كل تفاعل حتى تعرف من أين جاء.',
   },
   {
     question: 'هل يمكن الرد من داخل المنصة؟',
@@ -124,16 +122,62 @@ const FAQ = [
       'مفاتيح الوصول تُحفظ في الخادم ولا تصل إلى المتصفح. يمكنك إلغاء ربط أي حساب في أي وقت، ويتوقف الوصول وتُزال تفاعلاته من الصندوق.',
   },
   {
-    question: 'هل المنصة مناسبة للشركات الصغيرة؟',
+    question: 'هل المنصة مناسبة لحجم نشاطي؟',
     answer:
-      'نعم، هذا هو المقصد. صُممت لمتجر أو مقهى يديره شخص أو شخصان، بدون إعدادات معقّدة ولا تدريب.',
+      'نعم، مهما كان حجمه. تعمل مع متجر يديره شخص واحد ومع فريق خدمة عملاء كامل، والتفاعلات الجديدة تصل إلى الصندوق لحظة وصولها مهما كان عددها.',
   },
 ]
 
+/** Stable identity: `useActiveSection` observes on this list, so it must not
+ *  be rebuilt on every render. */
+const NAV_SECTION_IDS = NAV_LINKS.map((link) => link.id)
+
+/**
+ * Repeats the platform list so the ticker track is wider than any viewport
+ * and can loop by translating exactly half of itself. The count is even, so
+ * the halfway frame is identical to the starting one.
+ */
+const TICKER_PLATFORMS = Array.from({ length: 8 }, () => PLATFORM_ORDER).flat()
+
+/**
+ * Tracks which section the visitor is reading, for the navbar.
+ *
+ * The root margin collapses the viewport to a band around the middle of the
+ * screen, so at most one section is ever "current" and the highlight does not
+ * flicker between two sections that are both partly visible.
+ */
+function useActiveSection(ids: string[]): string | null {
+  const [active, setActive] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActive(entry.target.id)
+        }
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    )
+
+    for (const id of ids) {
+      const section = document.getElementById(id)
+      if (section) observer.observe(section)
+    }
+
+    return () => observer.disconnect()
+  }, [ids])
+
+  return active
+}
+
 function Navbar() {
+  const active = useActiveSection(NAV_SECTION_IDS)
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-canvas/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
         <Link to="/" className="rounded-md">
           <Logo />
         </Link>
@@ -141,9 +185,13 @@ function Navbar() {
         <nav className="mx-auto hidden items-center gap-1 md:flex" aria-label="روابط الصفحة">
           {NAV_LINKS.map((link) => (
             <a
-              key={link.href}
-              href={link.href}
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-sunken hover:text-ink"
+              key={link.id}
+              href={`#${link.id}`}
+              aria-current={active === link.id ? 'location' : undefined}
+              className={cn(
+                'rounded-md px-3.5 py-2 text-sm font-medium transition-colors hover:bg-surface-sunken hover:text-ink',
+                active === link.id ? 'bg-surface-sunken text-ink' : 'text-ink-secondary',
+              )}
             >
               {link.label}
             </a>
@@ -151,10 +199,10 @@ function Navbar() {
         </nav>
 
         <div className="ms-auto flex items-center gap-2 md:ms-0">
-          <Button variant="ghost" size="sm" asChild>
+          <Button variant="ghost" size="md" asChild>
             <Link to="/login">تسجيل الدخول</Link>
           </Button>
-          <Button variant="primary" size="sm" asChild>
+          <Button variant="primary" size="md" asChild>
             <Link to="/register">ابدأ مجانًا</Link>
           </Button>
         </div>
@@ -167,49 +215,67 @@ function Hero() {
   return (
     <section className="px-4 pt-14 pb-10 sm:px-6 sm:pt-20">
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
-          كل تعليقات ورسائل عملائك في مكان واحد
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-md leading-relaxed text-ink-secondary sm:text-lg">
-          يجمع Comment التعليقات والرسائل من Instagram و Facebook و TikTok و X في صندوق وارد واحد،
-          فتقرأ وترد دون التنقل بين التطبيقات.
-        </p>
+        <Reveal>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl lg:text-5xl">
+            كل تعليقات ورسائل عملائك في مكان واحد
+          </h1>
+        </Reveal>
 
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
+        <Reveal delay={80}>
+          <p className="mx-auto mt-4 max-w-xl text-md leading-relaxed text-ink-secondary sm:text-lg">
+            يجمع Comment التعليقات والرسائل من Instagram و Facebook و TikTok و X في صندوق وارد واحد،
+            فتقرأ وترد من منصة واحدة ومكان واحد.
+          </p>
+        </Reveal>
+
+        <Reveal delay={160} className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
           <Button variant="primary" size="lg" asChild>
             <Link to="/register">ابدأ مجانًا</Link>
           </Button>
           <Button variant="secondary" size="lg" asChild>
             <a href="#product">شاهد الصندوق الوارد</a>
           </Button>
-        </div>
+        </Reveal>
       </div>
 
-      <div className="mx-auto mt-12 max-w-5xl">
+      <Reveal delay={220} className="mx-auto mt-12 max-w-5xl">
         <InboxMockup />
-      </div>
+      </Reveal>
     </section>
   )
 }
 
 function Platforms() {
   return (
-    <section className="border-y border-border bg-surface px-4 py-8 sm:px-6">
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 lg:flex-row lg:justify-between">
-        <p className="max-w-xs text-center text-sm leading-relaxed text-ink-secondary lg:text-start">
-          المنصات المدعومة اليوم، ولكل منها صلاحيات مختلفة نعرضها لك قبل الربط.
-        </p>
+    <section className="border-y border-border bg-surface py-10 sm:py-12">
+      <div className="px-4 sm:px-6">
+        <Reveal>
+          <p className="mx-auto max-w-md text-center text-sm leading-relaxed text-ink-secondary">
+            المنصات المدعومة اليوم، ولكل منها صلاحيات مختلفة نعرضها لك قبل الربط.
+          </p>
+        </Reveal>
+      </div>
 
-        <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-          {PLATFORM_ORDER.map((provider) => (
-            <li key={provider} className="flex items-center gap-2">
-              <PlatformChip provider={provider} size="md" labelled />
+      {/* The ticker is a repeated loop, so the platform names are given once
+          here for assistive tech instead of thirty-two times below. */}
+      <p className="sr-only">
+        المنصات المدعومة: {PLATFORM_ORDER.map((provider) => PLATFORM_LABELS_BY_PROVIDER[provider]).join('، ')}
+      </p>
+
+      <div
+        aria-hidden
+        className="marquee relative mt-8 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
+      >
+        <div className="marquee-track items-center">
+          {TICKER_PLATFORMS.map((provider, index) => (
+            <span key={`${provider}-${index}`} className="flex shrink-0 items-center gap-2.5 px-7">
+              <PlatformChip provider={provider} size="md" />
               <span className="latin text-sm font-medium text-ink">
                 {PLATFORM_LABELS_BY_PROVIDER[provider]}
               </span>
-            </li>
+            </span>
           ))}
-        </ul>
+        </div>
       </div>
     </section>
   )
@@ -217,13 +283,15 @@ function Platforms() {
 
 function HowItWorks() {
   return (
-    <section id="how" className="scroll-mt-20 px-4 py-16 sm:px-6">
+    <section id="how" className="scroll-mt-24 px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-5xl">
-        <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
-          ثلاث خطوات من الربط إلى أول رد
-        </h2>
+        <Reveal>
+          <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
+            ثلاث خطوات من الربط إلى أول رد
+          </h2>
+        </Reveal>
 
-        <ol className="mt-8 grid gap-8 md:grid-cols-3 md:gap-6">
+        <Reveal as="ol" mode="children" className="mt-8 grid gap-8 md:grid-cols-3 md:gap-6">
           {STEPS.map((step, index) => (
             <li key={step.title} className="relative md:pt-5">
               {/* Hairline connector, not a row of boxes. */}
@@ -245,7 +313,7 @@ function HowItWorks() {
               <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{step.body}</p>
             </li>
           ))}
-        </ol>
+        </Reveal>
       </div>
     </section>
   )
@@ -253,9 +321,9 @@ function HowItWorks() {
 
 function ProductShowcase() {
   return (
-    <section id="product" className="scroll-mt-20 border-y border-border bg-surface px-4 py-16 sm:px-6">
+    <section id="product" className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6">
       <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
-        <div>
+        <Reveal>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">
             تعرف ما الذي يرد عليه العميل قبل أن تكتب
           </h2>
@@ -268,25 +336,30 @@ function ProductShowcase() {
             <div>
               <dt className="text-sm font-medium text-ink">سياق المنشور مرفق دائمًا</dt>
               <dd className="mt-1 text-sm leading-relaxed text-ink-muted">
-                نص المنشور وصورته أو مدة الفيديو، أو سبب واضح إن لم تتح المنصة قراءته.
+                نص المنشور وصورته أو مدة الفيديو، أمام عينك وأنت تكتب.
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-ink">صندوق رد ثابت أسفل المحادثة</dt>
+              <dt className="text-sm font-medium text-ink">ردّ أسرع من نفس الشاشة</dt>
               <dd className="mt-1 text-sm leading-relaxed text-ink-muted">
-                مع حالة إرسال واضحة، ورسالة مفهومة وإعادة محاولة إذا رفضت المنصة الرد.
+                اكتب ردك وأرسله مباشرة من المحادثة، مع حالة إرسال واضحة وإعادة محاولة إذا رفضت
+                المنصة الرد.
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-ink">حالة متابعة لكل تفاعل</dt>
+              <dt className="text-sm font-medium text-ink">
+                كل التعليقات من كل المنصات في قائمة واحدة
+              </dt>
               <dd className="mt-1 text-sm leading-relaxed text-ink-muted">
-                تنتقل من جديد إلى تم الحل، فلا يبقى تعليق دون رد بالخطأ.
+                مرتبة بالأحدث، ومع كل تفاعل حسابه وحالته، فلا يضيع تعليق ولا يبقى بلا رد.
               </dd>
             </div>
           </dl>
-        </div>
+        </Reveal>
 
-        <DetailMockup />
+        <Reveal delay={100}>
+          <DetailMockup />
+        </Reveal>
       </div>
     </section>
   )
@@ -294,23 +367,32 @@ function ProductShowcase() {
 
 function Features() {
   return (
-    <section id="features" className="scroll-mt-20 px-4 py-16 sm:px-6">
+    <section id="features" className="scroll-mt-24 px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-5xl">
-        <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
-          ما الذي يقدّمه Comment
-        </h2>
+        <Reveal>
+          <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
+            ما الذي يقدّمه Comment
+          </h2>
+        </Reveal>
 
-        <ul className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
-          {FEATURES.map((feature) => (
-            <li key={feature.title} className="flex gap-3 bg-surface p-5">
-              <feature.icon className="mt-0.5 size-4 shrink-0 text-brand-600" aria-hidden />
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-ink">{feature.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-ink-muted">{feature.body}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {/* Revealed as one block: the cells are hairline-separated inside a
+            clipped frame, so sliding them individually would show the gaps. */}
+        <Reveal delay={80}>
+          <ul className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
+            {FEATURES.map((feature) => (
+              <li
+                key={feature.title}
+                className="flex gap-3 bg-surface p-5 transition-colors duration-200 hover:bg-surface-subtle"
+              >
+                <feature.icon className="mt-0.5 size-4 shrink-0 text-brand-600" aria-hidden />
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-ink">{feature.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-muted">{feature.body}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
       </div>
     </section>
   )
@@ -320,21 +402,27 @@ function UseCases() {
   return (
     <section
       id="use-cases"
-      className="scroll-mt-20 border-y border-border bg-surface px-4 py-16 sm:px-6"
+      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
     >
       <div className="mx-auto max-w-5xl">
-        <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
-          مصمّم للمتاجر والأنشطة الصغيرة
-        </h2>
+        <Reveal>
+          <h2 className="max-w-lg text-2xl font-semibold tracking-tight text-ink">
+            مصمّم للمتاجر والأنشطة على اختلاف أحجامها
+          </h2>
+        </Reveal>
 
-        <dl className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+        <Reveal
+          as="dl"
+          mode="children"
+          className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {USE_CASES.map((item) => (
             <div key={item.title} className="border-t border-border pt-4">
               <dt className="text-sm font-semibold text-ink">{item.title}</dt>
               <dd className="mt-1.5 text-sm leading-relaxed text-ink-muted">{item.body}</dd>
             </div>
           ))}
-        </dl>
+        </Reveal>
       </div>
     </section>
   )
@@ -342,18 +430,22 @@ function UseCases() {
 
 function Faq() {
   return (
-    <section id="faq" className="scroll-mt-20 px-4 py-16 sm:px-6">
+    <section id="faq" className="scroll-mt-24 px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-2xl">
-        <h2 className="text-2xl font-semibold tracking-tight text-ink">الأسئلة الشائعة</h2>
+        <Reveal>
+          <h2 className="text-2xl font-semibold tracking-tight text-ink">الأسئلة الشائعة</h2>
+        </Reveal>
 
-        <Accordion type="single" collapsible className="mt-6 border-t border-border">
-          {FAQ.map((item, index) => (
-            <AccordionItem key={item.question} value={`faq-${index}`}>
-              <AccordionTrigger>{item.question}</AccordionTrigger>
-              <AccordionContent>{item.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <Reveal delay={80}>
+          <Accordion type="single" collapsible className="mt-6 border-t border-border">
+            {FAQ.map((item, index) => (
+              <AccordionItem key={item.question} value={`faq-${index}`}>
+                <AccordionTrigger>{item.question}</AccordionTrigger>
+                <AccordionContent>{item.answer}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </Reveal>
       </div>
     </section>
   )
@@ -362,7 +454,7 @@ function Faq() {
 function FinalCta() {
   return (
     <section className="px-4 pb-16 sm:px-6">
-      <div className="mx-auto max-w-5xl rounded-2xl bg-surface-inverse px-6 py-12 text-center sm:px-12">
+      <Reveal className="mx-auto max-w-5xl rounded-2xl bg-surface-inverse px-6 py-12 text-center sm:px-12">
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
           ابدأ بجمع تفاعلاتك في مكان واحد
         </h2>
@@ -382,7 +474,7 @@ function FinalCta() {
             <Link to="/login">تسجيل الدخول</Link>
           </Button>
         </div>
-      </div>
+      </Reveal>
     </section>
   )
 }
@@ -416,9 +508,9 @@ function Footer() {
           <p className="text-2xs font-medium text-ink-faint">المنتج</p>
           <ul className="mt-2.5 space-y-2">
             {NAV_LINKS.slice(0, 3).map((link) => (
-              <li key={link.href}>
+              <li key={link.id}>
                 <a
-                  href={link.href}
+                  href={`#${link.id}`}
                   className="text-xs text-ink-secondary transition-colors hover:text-ink"
                 >
                   {link.label}

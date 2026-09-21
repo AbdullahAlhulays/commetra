@@ -1,7 +1,11 @@
-import { CornerDownLeft, Inbox, MailOpen, Search, SendHorizonal } from 'lucide-react'
+import { Inbox, MailOpen, Search, SendHorizonal } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { AvatarWithPlatform, PlatformChip } from '@/components/platform/platform-chip'
-import { PLATFORM_LABELS_BY_PROVIDER } from '@/components/platform/platform-meta'
-import { StatusDot } from '@/components/status-indicator'
+import {
+  PLATFORM_LABELS_BY_PROVIDER,
+  PLATFORM_ORDER,
+} from '@/components/platform/platform-meta'
+import { StatusBadge, StatusDot } from '@/components/status-indicator'
 import { Avatar } from '@/components/ui/avatar'
 import type { SocialProvider, WorkflowStatus } from '@/domain'
 import { cn } from '@/lib/cn'
@@ -10,73 +14,94 @@ import { cn } from '@/lib/cn'
  * A static replica of the Unified Inbox for the marketing page.
  *
  * Built from the same primitives as the real screens — platform chips,
- * avatars, status dots, tokens — so the landing page shows the product rather
- * than an illustration of it. It is presentational only: no data layer, no
- * interactivity, and `aria-hidden` because the surrounding copy carries the
- * meaning for assistive tech.
+ * avatars, status badges, tokens — so the landing page shows the product
+ * rather than an illustration of it.
+ *
+ * Kept deliberately sparse: this is the first thing a visitor sees, so it
+ * carries one row per platform and nothing else. The only motion is the
+ * selection advancing through the list, which is what makes the point that
+ * four networks land in one place; it pauses on hover and does not run for
+ * visitors who asked for reduced motion.
+ *
+ * `aria-hidden`, because the surrounding copy carries the same meaning for
+ * assistive tech and a fake inbox would only add noise.
  */
 
 interface MockRow {
   id: string
   name: string
   provider: SocialProvider
+  /** The connected business account that received the interaction. */
   account: string
+  accountName: string
   text: string
+  /** Compact form for the list row. */
   time: string
+  /** Long form for the conversation. */
+  sentAt: string
   status: WorkflowStatus
   unread?: boolean
-  replied?: boolean
+  /** The post or video the customer was replying to. */
+  post: string
+}
+
+/**
+ * Pinned by the product-showcase section, and the fallback the hero starts
+ * from — declared on its own so it is statically known to exist.
+ */
+const FEATURED_ROW: MockRow = {
+  id: '1',
+  name: 'منيرة القحطاني',
+  provider: 'instagram',
+  account: 'nawah.roastery',
+  accountName: 'نواة | المحمصة',
+  text: 'حبوب الإثيوبي المذكورة في الفيديو متوفرة الحين؟ أبي أطلب كيلو.',
+  time: '6 د',
+  sentAt: 'قبل 6 دقائق',
+  status: 'new',
+  unread: true,
+  post: 'وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.',
 }
 
 const ROWS: MockRow[] = [
-  {
-    id: '1',
-    name: 'منيرة القحطاني',
-    provider: 'instagram',
-    account: 'nawah.roastery',
-    text: 'حبوب الإثيوبي المذكورة في الفيديو متوفرة الحين؟ أبي أطلب كيلو.',
-    time: '6 د',
-    status: 'new',
-    unread: true,
-  },
+  FEATURED_ROW,
   {
     id: '2',
     name: 'وليد العمري',
     provider: 'tiktok',
     account: 'nawah.coffee',
+    accountName: 'نواة | القهوة',
     text: 'وش اسم الطاحونة المستخدمة في الفيديو؟',
     time: '15 د',
+    sentAt: 'قبل 15 دقيقة',
     status: 'new',
     unread: true,
+    post: 'ثلاث خطوات لضبط درجة الطحن قبل تحضير الإسبريسو.',
   },
   {
     id: '3',
-    name: 'سلمان الفهد',
-    provider: 'x',
-    account: 'nawah_sa',
-    text: 'طلبت أمس ووصل اليوم الصباح. سرعة ممتازة 👌',
-    time: '28 د',
-    status: 'new',
-    unread: true,
-  },
-  {
-    id: '4',
     name: 'نوف الشمري',
     provider: 'facebook',
     account: 'nawah.sa',
+    accountName: 'نواة | السعودية',
     text: 'هل يمكن الطلب واستلامه من الفرع بدون توصيل؟',
-    time: '34 د',
-    status: 'open',
+    time: '28 د',
+    sentAt: 'قبل 28 دقيقة',
+    status: 'new',
+    unread: true,
+    post: 'فرع النخيل مفتوح من ٧ صباحًا إلى ١١ مساءً طوال أيام الأسبوع.',
   },
   {
-    id: '5',
-    name: 'فهد العنزي',
-    provider: 'instagram',
-    account: 'nawah.roastery',
-    text: 'مساء الخير، طلبي رقم ٤٨٢١ صار له ثلاثة أيام ولا وصلني تحديث.',
-    time: '21 د',
+    id: '4',
+    name: 'سلمان الفهد',
+    provider: 'x',
+    account: 'nawah_sa',
+    accountName: 'نواة',
+    text: 'طلبت أمس ووصل اليوم الصباح. سرعة ممتازة 👌',
+    time: '34 د',
+    sentAt: 'قبل 34 دقيقة',
     status: 'open',
-    replied: true,
+    post: 'الطلبات قبل الساعة ٢ ظهرًا تُشحن في نفس اليوم داخل الرياض.',
   },
 ]
 
@@ -85,15 +110,43 @@ const RAIL_ROWS = [
   { label: 'غير مقروء', count: 13, icon: MailOpen, active: false },
 ]
 
+/** Long enough to read the conversation before it moves on. */
+const CYCLE_MS = 4800
+
+/**
+ * Advances the selected row on a timer, unless the visitor is hovering the
+ * mockup or has asked for reduced motion.
+ */
+function useCycledSelection(length: number, paused: boolean): number {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    if (paused || length < 2) return
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
+
+    const timer = setInterval(() => setIndex((current) => (current + 1) % length), CYCLE_MS)
+    return () => clearInterval(timer)
+  }, [length, paused])
+
+  return index
+}
+
 function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
   return (
     <div
       className={cn(
-        'relative flex gap-2.5 border-b border-border-subtle px-2.5 py-2.5',
+        'relative flex gap-3 border-b border-border-subtle px-3 py-2.5 transition-colors duration-200',
         selected ? 'bg-brand-50' : row.unread ? 'bg-brand-50/30' : 'bg-surface',
       )}
     >
-      {selected ? <span className="absolute inset-y-0 start-0 w-0.5 bg-brand" /> : null}
+      <span
+        className={cn(
+          'absolute inset-y-0 start-0 w-0.5 bg-brand transition-opacity duration-200',
+          selected ? 'opacity-100' : 'opacity-0',
+        )}
+      />
 
       <AvatarWithPlatform provider={row.provider} chipSize="xs">
         <Avatar name={row.name} size="sm" />
@@ -103,85 +156,77 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
         <div className="flex items-baseline gap-1.5">
           <span
             className={cn(
-              'min-w-0 flex-1 truncate text-2xs',
+              'min-w-0 flex-1 truncate text-sm',
               row.unread ? 'font-semibold text-ink' : 'font-medium text-ink-secondary',
             )}
           >
             {row.name}
           </span>
-          {row.unread ? <span className="size-1 shrink-0 rounded-full bg-brand" /> : null}
-          <span className="tabular shrink-0 text-[0.625rem] text-ink-faint">{row.time}</span>
+          {row.unread ? <span className="size-1.5 shrink-0 rounded-full bg-brand" /> : null}
+          <span className="tabular shrink-0 text-2xs text-ink-faint">{row.time}</span>
         </div>
 
-        <p className="mt-0.5 line-clamp-2 text-[0.6875rem] leading-relaxed text-ink-muted">
-          {row.text}
-        </p>
+        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-muted">{row.text}</p>
 
-        <div className="mt-1 flex items-center gap-1.5 text-[0.625rem] text-ink-muted">
+        <div className="mt-1.5 flex items-center gap-1.5 text-2xs text-ink-muted">
           <PlatformChip provider={row.provider} size="xs" />
-          <span>{PLATFORM_LABELS_BY_PROVIDER[row.provider]}</span>
-          <span className="text-border-strong">·</span>
           <span className="latin truncate">@{row.account}</span>
-          <span className="ms-auto flex items-center gap-1">
-            {row.replied ? (
-              <span className="flex items-center gap-0.5 text-success-strong">
-                <CornerDownLeft className="size-2.5" />
-                تم الرد
-              </span>
-            ) : null}
-            <StatusDot status={row.status} />
-          </span>
+          <StatusDot status={row.status} className="ms-auto" />
         </div>
       </div>
     </div>
   )
 }
 
-function MockDetail() {
+function MockDetail({ row }: { row: MockRow }) {
+  const firstName = row.name.split(' ')[0]
+
   return (
     <div className="flex h-full flex-col bg-canvas">
-      <div className="flex items-start gap-2.5 border-b border-border bg-surface px-3 py-2.5">
-        <Avatar name="منيرة القحطاني" size="sm" />
+      <div className="flex items-start gap-3 border-b border-border bg-surface px-4 py-3">
+        <Avatar name={row.name} size="md" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-2xs font-semibold text-ink">منيرة القحطاني</p>
-          <div className="mt-0.5 flex items-center gap-1.5 text-[0.625rem] text-ink-muted">
-            <PlatformChip provider="instagram" size="xs" />
-            Instagram
+          <p className="truncate text-sm font-semibold text-ink">{row.name}</p>
+          <div className="mt-0.5 flex items-center gap-1.5 text-2xs text-ink-muted">
+            <PlatformChip provider={row.provider} size="xs" />
+            <span className="latin">{PLATFORM_LABELS_BY_PROVIDER[row.provider]}</span>
             <span className="text-border-strong">·</span>
-            <span className="truncate">نواة | المحمصة</span>
+            <span className="truncate">{row.accountName}</span>
           </div>
         </div>
-        <span className="flex shrink-0 items-center gap-1 rounded-sm border border-brand-200 bg-brand-50 px-1.5 py-0.5 text-[0.625rem] font-medium text-brand-700">
-          <StatusDot status="new" />
-          جديد
-        </span>
+        <StatusBadge status={row.status} className="shrink-0" />
       </div>
 
-      <div className="flex-1 space-y-2.5 overflow-hidden p-3">
-        <div className="rounded-lg border border-border bg-surface-subtle p-2.5">
-          <p className="text-[0.625rem] font-medium text-ink-muted">المنشور المرتبط</p>
-          <p className="mt-1 text-[0.6875rem] leading-relaxed text-ink-secondary">
-            وصلتنا دفعة جديدة من إثيوبيا — يرغاتشيف، تحميص فاتح. متوفرة الآن في المحمصة وأونلاين.
-          </p>
-        </div>
+      <div className="min-h-0 flex-1 overflow-hidden p-4">
+        <div
+          // Remounting on selection change replays the entrance, so the pane
+          // reads as "this conversation opened" rather than as text swapping.
+          key={row.id}
+          className="space-y-3 motion-safe:animate-content-in"
+        >
+          <div className="rounded-lg border border-border bg-surface-subtle p-3">
+            <p className="text-2xs font-medium text-ink-muted">المنشور المرتبط</p>
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-secondary">
+              {row.post}
+            </p>
+          </div>
 
-        <div>
-          <p className="px-0.5 text-[0.625rem] text-ink-faint">قبل 6 دقائق</p>
-          <div className="mt-1 max-w-[88%] rounded-xl rounded-ss-sm border border-border bg-surface px-3 py-2 text-[0.6875rem] leading-relaxed text-ink">
-            حبوب الإثيوبي المذكورة في الفيديو متوفرة الحين؟ أبي أطلب كيلو.
+          <div>
+            <p className="px-0.5 text-2xs text-ink-faint">{row.sentAt}</p>
+            <div className="mt-1 max-w-[88%] rounded-xl rounded-ss-sm border border-border bg-surface px-3.5 py-2.5 text-sm leading-relaxed text-ink">
+              {row.text}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-border bg-surface p-2.5">
-        <div className="rounded-lg border border-border">
-          <div className="px-2.5 py-2 text-[0.6875rem] text-ink-faint">
-            اكتب ردك على منيرة…
-          </div>
+      <div className="border-t border-border bg-surface p-3">
+        <div className="rounded-lg border border-border bg-surface">
+          <div className="px-3 py-2.5 text-xs text-ink-faint">اكتب ردك على {firstName}…</div>
           <div className="flex justify-end border-t border-border-subtle px-2 py-1.5">
-            <span className="flex items-center gap-1 rounded-md bg-brand-solid px-2 py-1 text-[0.625rem] font-medium text-white">
+            <span className="flex items-center gap-1.5 rounded-md bg-brand-solid px-2.5 py-1.5 text-2xs font-medium text-white">
               إرسال
-              <SendHorizonal className="size-2.5 rotate-180" />
+              <SendHorizonal className="size-3 rotate-180" />
             </span>
           </div>
         </div>
@@ -196,85 +241,95 @@ export function DetailMockup({ className }: { className?: string }) {
     <div
       aria-hidden
       className={cn(
-        'h-[21rem] overflow-hidden rounded-xl border border-border bg-surface shadow-lg',
+        'h-[23rem] overflow-hidden rounded-xl border border-border bg-surface shadow-lg',
         className,
       )}
     >
-      <MockDetail />
+      <MockDetail row={FEATURED_ROW} />
     </div>
   )
 }
 
 export function InboxMockup({ className }: { className?: string }) {
+  const [paused, setPaused] = useState(false)
+  const selected = useCycledSelection(ROWS.length, paused)
+  const active = ROWS[selected] ?? FEATURED_ROW
+
   return (
     <div
       aria-hidden
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
       className={cn(
         'overflow-hidden rounded-xl border border-border bg-surface shadow-lg',
         className,
       )}
     >
       {/* Application top bar */}
-      <div className="flex h-9 items-center gap-2 border-b border-border bg-surface px-3">
-        <span className="grid size-4 place-items-center rounded-[5px] bg-brand-solid">
-          <span className="size-1.5 rounded-full bg-white/90" />
+      <div className="flex h-11 items-center gap-2.5 border-b border-border bg-surface px-4">
+        <span className="grid size-5 place-items-center rounded-md bg-brand-solid">
+          <span className="size-2 rounded-full bg-white/90" />
         </span>
-        <span className="text-[0.625rem] font-semibold text-ink">نواة للقهوة المختصة</span>
-        <span className="ms-auto flex items-center gap-1.5">
-          <span className="h-4 w-20 rounded-sm border border-border bg-surface-subtle" />
-          <span className="size-4 rounded-full bg-surface-sunken" />
+        <span className="text-xs font-semibold text-ink">نواة للقهوة المختصة</span>
+        <span className="ms-auto flex items-center gap-2">
+          <span className="h-5 w-24 rounded-sm border border-border bg-surface-subtle" />
+          <span className="size-5 rounded-full bg-surface-sunken" />
         </span>
       </div>
 
-      <div className="flex h-[19rem] sm:h-[22rem]">
+      <div className="flex h-[24rem] sm:h-[26rem] lg:h-[28rem]">
         {/* Filter rail — right column in RTL */}
-        <div className="hidden w-32 shrink-0 border-e border-border bg-surface p-1.5 lg:block">
+        <div className="hidden w-40 shrink-0 border-e border-border bg-surface p-2 lg:block">
           {RAIL_ROWS.map((item) => (
             <div
               key={item.label}
               className={cn(
-                'flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[0.625rem]',
+                'flex items-center gap-2 rounded-md px-2 py-1.5 text-2xs',
                 item.active ? 'bg-brand-50 font-medium text-brand-700' : 'text-ink-secondary',
               )}
             >
               <item.icon
-                className={cn('size-3', item.active ? 'text-brand-600' : 'text-ink-faint')}
+                className={cn('size-3.5', item.active ? 'text-brand-600' : 'text-ink-faint')}
               />
               {item.label}
               <span className="tabular ms-auto text-ink-faint">{item.count}</span>
             </div>
           ))}
 
-          <p className="px-1.5 pt-3 pb-1 text-[0.625rem] font-medium text-ink-faint">المنصات</p>
-          {(['instagram', 'facebook', 'tiktok', 'x'] as SocialProvider[]).map((provider) => (
+          <p className="px-2 pt-4 pb-1.5 text-2xs font-medium text-ink-faint">المنصات</p>
+          {PLATFORM_ORDER.map((provider) => (
             <div
               key={provider}
-              className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[0.625rem] text-ink-secondary"
+              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-2xs text-ink-secondary"
             >
               <PlatformChip provider={provider} size="xs" />
-              {PLATFORM_LABELS_BY_PROVIDER[provider]}
+              <span className="latin">{PLATFORM_LABELS_BY_PROVIDER[provider]}</span>
             </div>
           ))}
         </div>
 
         {/* Interaction list — centre column */}
-        <div className="flex w-full shrink-0 flex-col border-e border-border bg-surface sm:w-[15rem] lg:w-[16rem]">
-          <div className="flex items-center gap-1.5 border-b border-border p-2">
-            <span className="relative flex h-6 flex-1 items-center rounded-md border border-border bg-surface px-2">
-              <Search className="size-3 text-ink-faint" />
-              <span className="ms-1.5 text-[0.625rem] text-ink-faint">ابحث…</span>
+        <div className="relative flex w-full shrink-0 flex-col border-e border-border bg-surface sm:w-[16rem] lg:w-[17.5rem]">
+          <div className="flex items-center gap-2 border-b border-border p-2.5">
+            <span className="relative flex h-7 flex-1 items-center rounded-md border border-border bg-surface px-2.5">
+              <Search className="size-3.5 text-ink-faint" />
+              <span className="ms-2 text-2xs text-ink-faint">ابحث…</span>
             </span>
           </div>
+
           <div className="min-h-0 flex-1 overflow-hidden">
             {ROWS.map((row, index) => (
-              <MockListRow key={row.id} row={row} selected={index === 0} />
+              <MockListRow key={row.id} row={row} selected={index === selected} />
             ))}
           </div>
+
+          {/* Signals that the list continues past the frame. */}
+          <span className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-surface to-transparent" />
         </div>
 
         {/* Selected interaction — left column */}
         <div className="hidden min-w-0 flex-1 sm:block">
-          <MockDetail />
+          <MockDetail row={active} />
         </div>
       </div>
     </div>
