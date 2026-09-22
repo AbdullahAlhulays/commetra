@@ -1,43 +1,48 @@
 import { cn } from '@/lib/cn'
 
 /**
- * Placeholder identity.
+ * The identity.
  *
- * The mark is intentionally a simple geometric shape: the real logo is not
- * designed yet, and a more elaborate stand-in would be harder to replace. Swap
- * the <svg> here and the whole product updates.
+ * Both files are transparent PNGs cropped from the supplied artwork, with the
+ * ink un-premultiplied off its white card so the anti-aliased edges carry no
+ * halo. Every surface the logo appears on today is light; a light-on-dark
+ * variant would need its own file rather than a CSS filter.
+ *
+ * Intrinsic dimensions are declared on each `img` so the row does not reflow
+ * once the file loads.
  */
+
+/** The speech-bubble alone, for places too narrow for the wordmark. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <span
-      className={cn(
-        'grid size-7 shrink-0 place-items-center rounded-lg bg-brand-solid text-white',
-        className,
-      )}
+    <img
+      src="/logo-mark.png"
+      alt=""
+      width={96}
+      height={96}
+      className={cn('size-7 shrink-0 object-contain', className)}
       aria-hidden
-    >
-      <svg viewBox="0 0 24 24" className="size-4" fill="none">
-        <path
-          d="M20 12.4c0 4-3.6 7.2-8 7.2a9 9 0 0 1-2.7-.4L4 21l1.5-3.9A6.9 6.9 0 0 1 4 12.4C4 8.4 7.6 5.2 12 5.2s8 3.2 8 7.2Z"
-          stroke="currentColor"
-          strokeWidth="1.9"
-          strokeLinejoin="round"
-        />
-        <circle cx="9" cy="12.4" r="1.15" fill="currentColor" />
-        <circle cx="15" cy="12.4" r="1.15" fill="currentColor" />
-      </svg>
-    </span>
+    />
   )
 }
 
 export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
+  if (compact) {
+    return (
+      <span className={cn('inline-flex items-center', className)}>
+        <LogoMark />
+        <span className="sr-only">Comment</span>
+      </span>
+    )
+  }
+
   return (
-    <span className={cn('inline-flex items-center gap-2', className)}>
-      <LogoMark />
-      {compact ? null : (
-        <span className="latin text-[0.95rem] font-semibold tracking-tight text-ink">Comment</span>
-      )}
-      <span className="sr-only">Comment</span>
-    </span>
+    <img
+      src="/logo.png"
+      alt="Comment"
+      width={640}
+      height={146}
+      className={cn('h-7 w-auto shrink-0 object-contain', className)}
+    />
   )
 }
