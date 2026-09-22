@@ -469,9 +469,6 @@ function Footer() {
       <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))] sm:gap-6">
         <div className="max-w-xs">
           <Logo />
-          <p className="mt-3 text-xs leading-relaxed text-ink-muted">
-            {t.footer.tagline}
-          </p>
           <div className="mt-5 inline-flex items-center gap-3 rounded-xl border border-border bg-canvas px-3 py-2.5">
             <img
               src="/commercial-register.png"

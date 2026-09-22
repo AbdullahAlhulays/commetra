@@ -144,6 +144,7 @@ export const mockInboxService: InboxService = {
       sales_intent: 0,
       customer_service: 0,
       negative: 0,
+      positive: 0,
       spam: 0,
       other: 0,
     } satisfies Record<InteractionCategory, number>

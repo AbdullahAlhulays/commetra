@@ -41,6 +41,7 @@ export const en: Dictionary = {
       sales_intent: 'Sales opportunity',
       customer_service: 'Customer service',
       negative: 'Negative comment',
+      positive: 'Positive comment',
       spam: 'Spam and abuse',
       other: 'Other',
     },
@@ -48,15 +49,17 @@ export const en: Dictionary = {
       sales_intent: 'A question about price, availability or an order — a customer close to buying.',
       customer_service: 'A question about an existing order, shipping, a return or a branch.',
       negative: 'A complaint or criticism worth handling before it grows.',
+      positive: 'Thanks, praise or a good experience — a customer worth answering.',
       spam: 'Ads, links and abuse that have nothing to do with your business.',
-      other: 'Thanks, compliments and general comments that are not waiting on you.',
+      other: 'General comments that need no reply and no follow-up.',
     },
     samples: {
       sales_intent: 'Are the Ethiopian beans in stock? I want to order a kilo.',
       customer_service: 'Something is broken on the site, I cannot finish my order.',
       negative: 'My order is two days late and nobody told me anything.',
+      positive: 'The coffee arrived today and it smells incredible 🤎 thank you.',
       spam: 'Real followers at the lowest prices 🔥 DM us now.',
-      other: 'The coffee arrived today and it smells incredible 🤎 thank you.',
+      other: 'What is the song in the video?',
     },
     hiding: {
       title: 'Spam and complaints disappear from your post, not from your inbox',
@@ -162,7 +165,6 @@ export const en: Dictionary = {
   },
 
   footer: {
-    tagline: 'One inbox for the comments and messages your customers send you on social media.',
     commercialRegister: 'Commercial register',
     commercialRegisterAlt: 'Saudi commercial register emblem',
     product: 'Product',

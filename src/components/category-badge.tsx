@@ -3,6 +3,7 @@ import {
   EyeOff,
   Frown,
   LifeBuoy,
+  Smile,
   MessageSquare,
   ShieldAlert,
   ShoppingBag,
@@ -19,10 +20,11 @@ import { cn } from '@/lib/cn'
 /**
  * Category colour, spent sparingly.
  *
- * Only the two categories that change what someone does today carry a tint: a
- * buying question is money on the table, and a complaint is a fire. The other
- * three stay neutral and are told apart by icon and label, which is what keeps
- * a mixed list from turning into five competing colours.
+ * Only the categories that change what someone does today carry a tint: a
+ * buying question is money on the table, a complaint is a fire, and praise is
+ * worth answering while it is warm. The rest stay neutral and are told apart
+ * by icon and label, which is what keeps a mixed list from turning into six
+ * competing colours.
  */
 const STYLES: Record<InteractionCategory, { icon: LucideIcon; tone: string }> = {
   sales_intent: { icon: ShoppingBag, tone: 'border-brand-200 bg-brand-50 text-brand-700' },
@@ -31,6 +33,7 @@ const STYLES: Record<InteractionCategory, { icon: LucideIcon; tone: string }> = 
     tone: 'border-border bg-surface-sunken text-ink-secondary',
   },
   negative: { icon: Frown, tone: 'border-warning-border bg-warning-surface text-warning-strong' },
+  positive: { icon: Smile, tone: 'border-success-border bg-success-surface text-success-strong' },
   spam: { icon: Ban, tone: 'border-border bg-surface-sunken text-ink-muted' },
   other: { icon: MessageSquare, tone: 'border-border bg-surface-sunken text-ink-muted' },
 }

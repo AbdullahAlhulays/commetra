@@ -117,7 +117,7 @@ const ROW_SHAPES: RowShape[] = [
     account: 'nawah_sa',
     minutes: 34,
     status: 'open',
-    category: 'other',
+    category: 'positive',
   },
 ]
 

@@ -41,6 +41,7 @@ export const INTERACTION_CATEGORIES = [
   'sales_intent',
   'customer_service',
   'negative',
+  'positive',
   'spam',
   'other',
 ] as const
@@ -51,6 +52,7 @@ export const INTERACTION_CATEGORY_LABELS: Record<InteractionCategory, string> = 
   sales_intent: 'فرصة بيع',
   customer_service: 'خدمة عملاء',
   negative: 'تعليق سلبي',
+  positive: 'تعليق إيجابي',
   spam: 'إزعاج وسبام',
   other: 'أخرى',
 }
@@ -59,6 +61,7 @@ export const INTERACTION_CATEGORY_DESCRIPTIONS: Record<InteractionCategory, stri
   sales_intent: 'سؤال عن سعر أو توفر أو طلب — عميل قريب من الشراء.',
   customer_service: 'سؤال عن طلب قائم أو شحن أو إرجاع أو فرع.',
   negative: 'شكوى أو انتقاد يحتاج معالجة قبل أن يكبر.',
+  positive: 'شكر أو مدح أو تجربة جيدة — عميل يستحق ردًا.',
   spam: 'إعلانات وروابط وتعليقات مسيئة لا علاقة لها بنشاطك.',
   other: 'شكر ومجاملات وتعليقات عامة لا تنتظر ردًا عاجلًا.',
 }
