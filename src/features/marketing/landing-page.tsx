@@ -566,8 +566,9 @@ function Footer() {
 
       <div className="mx-auto mt-8 flex max-w-5xl flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
         <LanguageSwitcher className="-ms-3 self-start sm:hidden" />
-        <p className="text-2xs text-ink-faint">
-          © 2026 <span className="latin">Comment</span>. {t.footer.rights}
+        <p className="text-2xs text-ink-faint" dir="ltr">
+          © 2026 Comment — Operated by <span dir="rtl">مؤسسة كومبوزيو</span> (Composio
+          Establishment)
         </p>
         <p className="text-2xs text-ink-faint">
           {t.footer.commercialRegister}:{' '}

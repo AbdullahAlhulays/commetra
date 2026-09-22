@@ -184,7 +184,10 @@ function LegalPage({ document }: { document: LegalDocument }) {
 
       <footer className="border-t border-border bg-surface px-4 py-6 sm:px-6">
         <div className="mx-auto flex max-w-3xl flex-col gap-3 text-2xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 <span className="latin">Comment</span>. جميع الحقوق محفوظة.</p>
+          <p dir="ltr">
+            © 2026 Comment — Operated by <span dir="rtl">مؤسسة كومبوزيو</span> (Composio
+            Establishment)
+          </p>
           <nav aria-label="روابط السياسات" className="flex flex-wrap gap-x-4 gap-y-2">
             <Link to="/privacy" className="transition-colors hover:text-ink">الخصوصية</Link>
             <Link to="/terms" className="transition-colors hover:text-ink">الشروط</Link>
