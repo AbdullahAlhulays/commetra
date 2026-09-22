@@ -25,7 +25,7 @@ export const en: Dictionary = {
   hero: {
     title: 'Every customer comment and message in one place',
     body: 'Every comment and message from Instagram, Facebook, TikTok and X in one inbox, sorted for you automatically.',
-    secondary: 'See how it works',
+    secondary: 'See it in action',
   },
 
   channels: {
@@ -154,6 +154,9 @@ export const en: Dictionary = {
     body: 'Create an account and try the inbox on sample data before connecting anything real.',
   },
 
+  demo: {
+    opening: 'Opening a demo account…',
+  },
   errors: {
     notFoundTitle: 'Page not found',
     notFoundBody: 'The link you opened is wrong, or it has changed.',

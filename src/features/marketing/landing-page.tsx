@@ -146,8 +146,10 @@ function Hero() {
           <Button variant="primary" size="lg" asChild>
             <Link to="/register">{t.nav.signup}</Link>
           </Button>
+          {/* Straight into the seeded tenant: showing the inbox beats
+              describing it, and there is no form in the way. */}
           <Button variant="secondary" size="lg" asChild>
-            <a href="#how">{t.hero.secondary}</a>
+            <Link to="/demo">{t.hero.secondary}</Link>
           </Button>
         </Reveal>
       </div>

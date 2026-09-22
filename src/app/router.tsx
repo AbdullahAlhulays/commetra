@@ -38,6 +38,14 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        // Outside RedirectIfAuthenticated on purpose: the page decides where an
+        // already-signed-in visitor goes rather than bouncing them to login.
+        path: '/demo',
+        lazy: async () => ({
+          Component: (await import('@/features/auth/demo-entry-page')).DemoEntryPage,
+        }),
+      },
+      {
         element: <RedirectIfAuthenticated />,
         children: [
           {
