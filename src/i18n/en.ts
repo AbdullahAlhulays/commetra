@@ -19,7 +19,7 @@ export const en: Dictionary = {
     start: 'Get started',
     login: 'Log in',
     signup: 'Start free',
-    language: 'Language',
+    switchLanguage: (name: string) => `Switch to ${name}`,
   },
 
   hero: {

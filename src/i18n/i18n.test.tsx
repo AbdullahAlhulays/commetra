@@ -40,7 +40,7 @@ describe('switching language', () => {
   it('swaps the copy and flips the document direction', async () => {
     const { user } = renderWithProviders(<LandingPage />)
 
-    await user.click(screen.getAllByRole('button', { name: 'English' })[0]!)
+    await user.click(screen.getAllByRole('button', { name: /English/ })[0]!)
 
     expect(await screen.findByRole('heading', { level: 1, name: en.hero.title })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1, name: ar.hero.title })).not.toBeInTheDocument()
@@ -54,7 +54,7 @@ describe('switching language', () => {
   it('translates the inbox mockup along with the page around it', async () => {
     const { user } = renderWithProviders(<LandingPage />)
 
-    await user.click(screen.getAllByRole('button', { name: 'English' })[0]!)
+    await user.click(screen.getAllByRole('button', { name: /English/ })[0]!)
 
     expect(await screen.findByText(en.mockup.org)).toBeInTheDocument()
     // The first row's name shows twice: in the list and in the open detail pane.

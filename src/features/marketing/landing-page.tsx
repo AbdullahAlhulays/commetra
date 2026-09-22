@@ -86,12 +86,15 @@ function Navbar() {
         scrolled ? 'border-border shadow-sm' : 'border-transparent',
       )}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
-        <Link to="/" className="rounded-md">
+      {/* Three columns, not a flex row: `mx-auto` on the nav centres it in the
+          space left over by the logo and the actions, which are different
+          widths, so the links always sat slightly off-centre. */}
+      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6">
+        <Link to="/" className="justify-self-start rounded-md">
           <Logo />
         </Link>
 
-        <nav className="mx-auto hidden items-center gap-1 md:flex" aria-label={t.nav.sections}>
+        <nav className="hidden items-center gap-1 md:flex" aria-label={t.nav.sections}>
           {links.map((link) => (
             <a
               key={link.id}
@@ -107,7 +110,7 @@ function Navbar() {
           ))}
         </nav>
 
-        <div className="ms-auto flex items-center gap-2 md:ms-0">
+        <div className="flex items-center gap-1 justify-self-end">
           <LanguageSwitcher className="hidden sm:inline-flex" />
           <Button variant="ghost" size="md" asChild>
             <Link to="/login">{t.nav.login}</Link>
@@ -562,11 +565,8 @@ function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-8 max-w-5xl border-t border-border pt-5">
-        <LanguageSwitcher className="mb-4 sm:hidden" />
-      </div>
-
-      <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto mt-8 flex max-w-5xl flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <LanguageSwitcher className="-ms-3 self-start sm:hidden" />
         <p className="text-2xs text-ink-faint">
           © 2026 <span className="latin">Comment</span>. {t.footer.rights}
         </p>

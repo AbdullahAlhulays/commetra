@@ -18,7 +18,7 @@ export const ar = {
     start: 'ابدأ',
     login: 'تسجيل الدخول',
     signup: 'ابدأ مجانًا',
-    language: 'اللغة',
+    switchLanguage: (name: string) => `التبديل إلى ${name}`,
   },
 
   hero: {

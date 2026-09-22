@@ -1,4 +1,18 @@
 import '@testing-library/jest-dom/vitest'
+import { beforeEach } from 'vitest'
+
+/*
+ * jsdom keeps one localStorage for the whole file, so anything a component
+ * persists — the chosen language, most obviously — would leak into the next
+ * test and make results depend on the order they ran in.
+ */
+beforeEach(() => {
+  try {
+    localStorage.clear()
+  } catch {
+    // Storage unavailable; nothing to clear.
+  }
+})
 
 /*
  * jsdom lacks the layout and pointer APIs Radix relies on for positioning and
