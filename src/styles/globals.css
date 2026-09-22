@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 
-/* Arabic + Latin subsets only. Latin is required for platform names (Instagram, TikTok, X). */
+/*
+ * Latin comes from IBM Plex Sans Arabic, which is also the Arabic fallback
+ * until the Thmanyah files are in place. Latin is not optional: platform names
+ * (Instagram, TikTok, X), handles and numerals all render in it.
+ */
 @import '@fontsource/ibm-plex-sans-arabic/arabic-400.css';
 @import '@fontsource/ibm-plex-sans-arabic/arabic-500.css';
 @import '@fontsource/ibm-plex-sans-arabic/arabic-600.css';
@@ -8,6 +12,60 @@
 @import '@fontsource/ibm-plex-sans-arabic/latin-400.css';
 @import '@fontsource/ibm-plex-sans-arabic/latin-500.css';
 @import '@fontsource/ibm-plex-sans-arabic/latin-600.css';
+
+/*
+ * Thmanyah Sans — the Arabic face.
+ *
+ * `unicode-range` confines it to Arabic codepoints, so Latin keeps falling to
+ * IBM Plex whatever the file happens to contain. That is what makes the stack
+ * predictable: one face per script, chosen here rather than by whichever
+ * glyphs the font ships with.
+ *
+ * The files are not in the repository. Drop them into public/fonts/ using the
+ * names below and this activates itself; until then every rule here simply
+ * fails to resolve and Arabic renders in IBM Plex exactly as it does today.
+ * See public/fonts/README.md for where to get them and the licence position.
+ */
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/thmanyah-sans-300.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/thmanyah-sans-400.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/thmanyah-sans-500.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/thmanyah-sans-700.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/thmanyah-sans-800.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
 
 /*
  * Design tokens.
@@ -140,7 +198,11 @@
   --color-danger-surface: var(--danger-surface);
   --color-danger-border: var(--danger-border);
 
-  --font-sans: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  /* Thmanyah carries Arabic, IBM Plex carries Latin and stands in for Arabic
+     until the Thmanyah files land. Headings use 600, which Thmanyah has no
+     weight for; the browser picks its nearest, so 500 and 700 both exist. */
+  --font-sans:
+    'Thmanyah Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
 
   /* Type scale. Arabic needs a taller line box than Latin at the same size,
      so body leading is generous while display leading stays tight. */
