@@ -11,15 +11,11 @@ import { cn } from '@/lib/cn'
 const DOT_COLORS: Record<WorkflowStatus, string> = {
   new: 'bg-brand',
   open: 'bg-slate-400',
-  pending: 'bg-warning',
-  resolved: 'bg-success',
 }
 
 const BADGE_COLORS: Record<WorkflowStatus, string> = {
   new: 'border-brand-200 bg-brand-50 text-brand-700',
   open: 'border-border bg-surface-sunken text-ink-secondary',
-  pending: 'border-warning-border bg-warning-surface text-warning-strong',
-  resolved: 'border-success-border bg-success-surface text-success-strong',
 }
 
 export function StatusDot({ status, className }: { status: WorkflowStatus; className?: string }) {

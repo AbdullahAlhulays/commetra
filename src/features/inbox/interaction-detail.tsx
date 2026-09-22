@@ -21,7 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -262,19 +261,8 @@ export function InteractionDetail({
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-ink-muted">
-            <span className="flex items-center gap-1">
-              <PlatformChip provider={interaction.provider} size="xs" />
-              {PLATFORM_LABELS_BY_PROVIDER[interaction.provider]}
-            </span>
+            <PlatformChip provider={interaction.provider} size="xs" labelled />
             <CategoryBadge category={interaction.category} />
-            {account ? (
-              <>
-                <span aria-hidden className="text-border-strong">
-                  ·
-                </span>
-                <span className="truncate">{account.displayName}</span>
-              </>
-            ) : null}
             <span aria-hidden className="text-border-strong">
               ·
             </span>
@@ -318,14 +306,6 @@ export function InteractionDetail({
               >
                 {interaction.isRead ? <Mail aria-hidden /> : <MailOpen aria-hidden />}
                 {interaction.isRead ? 'تعليم كغير مقروء' : 'تعليم كمقروء'}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() => setStatus.mutate({ id: interaction.id, status: 'resolved' })}
-                disabled={interaction.status === 'resolved'}
-              >
-                <Check aria-hidden />
-                تعليم كتم الحل
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

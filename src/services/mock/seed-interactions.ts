@@ -117,7 +117,7 @@ const SEEDS: InteractionSeed[] = [
     at: 47,
     category: 'positive',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [
       { by: 'business', text: 'سعدنا كثيراً بهذا يا ريم، وننتظرك في الطلب القادم 🤎', at: 40 },
     ],
@@ -153,7 +153,7 @@ const SEEDS: InteractionSeed[] = [
     at: 140,
     category: 'sales_intent',
     read: true,
-    status: 'pending',
+    status: 'open',
     thread: [
       {
         by: 'business',
@@ -173,7 +173,7 @@ const SEEDS: InteractionSeed[] = [
     at: 210,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'نعم، من ٢ ظهراً إلى ١٢ منتصف الليل.', at: 205 }],
   },
   {
@@ -232,7 +232,7 @@ const SEEDS: InteractionSeed[] = [
     text: 'وصلني الطلب ناقص كيس. تواصلت مع الدعم ولا رد.',
     at: 2150,
     category: 'negative',
-    status: 'pending',
+    status: 'open',
   },
   {
     id: 'int_igs_03',
@@ -302,7 +302,7 @@ const SEEDS: InteractionSeed[] = [
     at: 255,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [
       { by: 'business', text: 'نعم، يوجد موقف خلف المبنى ومدخله من نفس الشارع.', at: 250 },
     ],
@@ -316,7 +316,7 @@ const SEEDS: InteractionSeed[] = [
     text: 'الطلب تأخر ثلاث ساعات عن الوقت المذكور، وما وصلني أي إشعار. هذي ثاني مرة تصير.',
     at: 400,
     category: 'negative',
-    status: 'pending',
+    status: 'open',
     context: {
       excerpt: 'التوصيل السريع الآن داخل الرياض خلال ٩٠ دقيقة.',
       at: 60 * 30,
@@ -344,7 +344,7 @@ const SEEDS: InteractionSeed[] = [
     at: 1420,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [
       { by: 'business', text: 'وصلتنا الفكرة يا رزان، ونشتغل على فرع جديد شمال الرياض هذي السنة.', at: 1400 },
     ],
@@ -408,7 +408,7 @@ const SEEDS: InteractionSeed[] = [
     at: 260,
     category: 'customer_service',
     read: true,
-    status: 'pending',
+    status: 'open',
   },
   {
     id: 'int_tt_05',
@@ -443,7 +443,7 @@ const SEEDS: InteractionSeed[] = [
     at: 1600,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
 
   {
@@ -505,7 +505,7 @@ const SEEDS: InteractionSeed[] = [
     at: 1250,
     category: 'positive',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'هذا واجبنا، وسعدنا بزيارتك 🤎', at: 1240 }],
   },
   {
@@ -538,7 +538,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 4,
     category: 'positive',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'شكراً لك، نسعد بخدمتك دائماً.', at: 60 * 24 * 4 - 40 }],
   },
   {
@@ -551,7 +551,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 4 + 300,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'نعم، خلال ٤٨ ساعة.', at: 60 * 24 * 4 + 240 }],
   },
   {
@@ -564,7 +564,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 5,
     category: 'other',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_04',
@@ -576,7 +576,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 5 + 420,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [
       { by: 'business', text: 'شكراً على الملاحظة، حسّنا سرعة الموقع في التحديث الأخير.', at: 60 * 24 * 5 + 320 },
     ],
@@ -591,7 +591,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 6,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'كل خميس الساعة ٧ مساءً، والحجز من الموقع.', at: 60 * 24 * 6 - 90 }],
   },
   {
@@ -604,7 +604,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 7,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'أفضل مدة خلال ٣٠ يوماً من تاريخ التحميص.', at: 60 * 24 * 7 - 60 }],
   },
   {
@@ -617,7 +617,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 8,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_08',
@@ -629,7 +629,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 9,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_09',
@@ -641,7 +641,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 10,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'أرسلنا لك تفاصيل طلبات الشركات على البريد.', at: 60 * 24 * 10 - 180 }],
   },
   {
@@ -654,7 +654,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 11,
     category: 'negative',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'نعتذر عن التأخير، وعوّضناك بقسيمة على الطلب القادم.', at: 60 * 24 * 11 - 120 }],
   },
   {
@@ -667,7 +667,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 12,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_12',
@@ -679,7 +679,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 13,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_13',
@@ -691,7 +691,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 14,
     category: 'positive',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'سعدنا بزيارتك 🤎', at: 60 * 24 * 14 - 50 }],
   },
   {
@@ -704,7 +704,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 15,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'نعم، الإرجاع متاح خلال ٧ أيام إذا كان المنتج مغلقاً.', at: 60 * 24 * 15 - 90 }],
   },
   {
@@ -717,7 +717,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 17,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_16',
@@ -729,7 +729,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 19,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_17',
@@ -741,7 +741,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 21,
     category: 'positive',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_18',
@@ -753,7 +753,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 23,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'راجعنا التغليف مع شركة الشحن، ونعتذر عن التجربة.', at: 60 * 24 * 23 - 200 }],
   },
   {
@@ -766,7 +766,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 26,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_20',
@@ -778,7 +778,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 28,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
     thread: [{ by: 'business', text: 'في عبوة محكمة بعيداً عن الحرارة والضوء.', at: 60 * 24 * 28 - 70 }],
   },
   {
@@ -791,7 +791,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 31,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_22',
@@ -803,7 +803,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 34,
     category: 'other',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_23',
@@ -815,7 +815,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 38,
     category: 'sales_intent',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   {
     id: 'int_h_24',
@@ -827,7 +827,7 @@ const SEEDS: InteractionSeed[] = [
     at: 60 * 24 * 42,
     category: 'customer_service',
     read: true,
-    status: 'resolved',
+    status: 'open',
   },
   /*
    * Junk. Every network gets some, and the two Meta accounts show it taken

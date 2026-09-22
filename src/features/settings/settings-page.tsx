@@ -343,13 +343,6 @@ function PreferencesTab() {
             onCheckedChange={(value) => patch({ markReadOnOpen: value })}
             disabled={update.isPending}
           />
-          <ToggleRow
-            label="الانتقال للتفاعل التالي بعد الحل"
-            description="بعد تعليم تفاعل كتم الحل، يُفتح التالي مباشرة."
-            checked={data.autoAdvanceAfterResolve}
-            onCheckedChange={(value) => patch({ autoAdvanceAfterResolve: value })}
-            disabled={update.isPending}
-          />
 
           <div className="flex flex-wrap items-center gap-4 px-4 py-3">
             <div className="min-w-0 flex-1">

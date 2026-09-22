@@ -16,15 +16,21 @@ export const INTERACTION_TYPE_LABELS: Record<InteractionType, string> = {
   direct_message: 'رسالة',
 }
 
-export const WORKFLOW_STATUSES = ['new', 'open', 'pending', 'resolved'] as const
+/**
+ * Two states, not four.
+ *
+ * `pending` and `resolved` asked the team to maintain a workflow by hand, and
+ * a state nobody updates is worse than no state at all — it reads as accurate
+ * while going stale. What is left is the distinction that maintains itself:
+ * has anyone looked at this yet.
+ */
+export const WORKFLOW_STATUSES = ['new', 'open'] as const
 
 export type WorkflowStatus = (typeof WORKFLOW_STATUSES)[number]
 
 export const WORKFLOW_STATUS_LABELS: Record<WorkflowStatus, string> = {
   new: 'جديد',
-  open: 'مفتوح',
-  pending: 'بانتظار',
-  resolved: 'تم الحل',
+  open: 'مقروء',
 }
 
 /**

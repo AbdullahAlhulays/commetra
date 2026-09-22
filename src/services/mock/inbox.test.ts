@@ -59,10 +59,10 @@ describe('inbox filtering', () => {
   })
 
   it('filters by workflow status', async () => {
-    const page = await mockInboxService.list({ ...base, statuses: ['resolved'], limit: 100 })
+    const page = await mockInboxService.list({ ...base, statuses: ['open'], limit: 100 })
 
     expect(page.items.length).toBeGreaterThan(0)
-    expect(page.items.every((item) => item.status === 'resolved')).toBe(true)
+    expect(page.items.every((item) => item.status === 'open')).toBe(true)
   })
 
   it('filters unread', async () => {
@@ -203,8 +203,8 @@ describe('inbox mutations', () => {
   })
 
   it('changes workflow status', async () => {
-    const updated = await mockInboxService.setStatus('int_ig_01', 'resolved')
-    expect(updated.status).toBe('resolved')
+    const updated = await mockInboxService.setStatus('int_ig_01', 'open')
+    expect(updated.status).toBe('open')
   })
 
   it('rejects an unknown interaction', async () => {
@@ -256,7 +256,7 @@ describe('reply capability enforcement', () => {
     await mockInboxService.reply({ interactionId: 'int_fb_05', text: 'نعتذر عن التأخير' })
     const updated = await mockInboxService.get('int_fb_05')
 
-    expect(updated.status).toBe('pending')
+    expect(updated.status).toBe('open')
   })
 })
 

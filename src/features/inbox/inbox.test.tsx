@@ -28,6 +28,20 @@ function listRowTexts(): string[] {
     .map((button) => button.textContent ?? '')
 }
 
+/**
+ * Each row's platform.
+ *
+ * The row no longer spells the network out in text — the chip is the only
+ * indicator — so this reads the chip's accessible name, which is what a
+ * screen-reader user gets and therefore what the test should check.
+ */
+function listRowPlatforms(): string[] {
+  const list = screen.getByRole('list')
+  return within(list)
+    .getAllByRole('button')
+    .map((button) => within(button).getByRole('img').getAttribute('aria-label') ?? '')
+}
+
 beforeEach(prepareMocks)
 
 describe('inbox list', () => {
@@ -35,13 +49,13 @@ describe('inbox list', () => {
     renderInbox()
     await screen.findByText('منيرة القحطاني')
 
-    const rows = listRowTexts().join(' ')
+    const platforms = new Set(listRowPlatforms())
 
-    // Platform origin must be readable without opening anything.
-    expect(rows).toContain('Instagram')
-    expect(rows).toContain('Facebook')
-    expect(rows).toContain('TikTok')
-    expect(rows).toContain('X')
+    // Platform origin must be reachable without opening anything.
+    expect(platforms).toContain('Instagram')
+    expect(platforms).toContain('Facebook')
+    expect(platforms).toContain('TikTok')
+    expect(platforms).toContain('X')
   })
 
   it('labels each row with its receiving account and unread state', async () => {
@@ -73,9 +87,9 @@ describe('inbox filtering', () => {
     await user.click(rail().getByRole('button', { name: /^TikTok/ }))
 
     await waitFor(() => {
-      const rows = listRowTexts()
-      expect(rows.length).toBeGreaterThan(0)
-      expect(rows.every((text) => text.includes('TikTok'))).toBe(true)
+      const platforms = listRowPlatforms()
+      expect(platforms.length).toBeGreaterThan(0)
+      expect(platforms.every((platform) => platform === 'TikTok')).toBe(true)
     })
   })
 
@@ -89,7 +103,7 @@ describe('inbox filtering', () => {
     await user.click(screen.getByText('مسح الكل'))
 
     await waitFor(() => {
-      expect(listRowTexts().some((text) => text.includes('Instagram'))).toBe(true)
+      expect(listRowPlatforms().some((platform) => platform === 'Instagram')).toBe(true)
     })
   })
 

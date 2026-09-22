@@ -68,10 +68,17 @@ function RailRow({
   )
 }
 
+/**
+ * A titled group of filters.
+ *
+ * The rule above each heading is doing the real work: with five lists stacked
+ * in one narrow column, a slightly bolder label alone was not enough to tell
+ * where one ends and the next begins.
+ */
 function RailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-0.5">
-      <p className="px-2 pt-3 pb-1 text-2xs font-medium text-ink-faint">{title}</p>
+    <div className="mt-3 space-y-0.5 border-t border-border pt-3">
+      <p className="px-2 pb-1.5 text-2xs font-semibold text-ink-secondary">{title}</p>
       {children}
     </div>
   )

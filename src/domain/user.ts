@@ -34,7 +34,6 @@ export interface NotificationPreferences {
 
 export interface WorkspacePreferences {
   /** Open the next interaction automatically after resolving one. */
-  autoAdvanceAfterResolve: boolean
   /** Mark an interaction read as soon as it is opened. */
   markReadOnOpen: boolean
   /** Default inbox view on sign-in. */

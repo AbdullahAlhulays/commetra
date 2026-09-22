@@ -123,7 +123,6 @@ export const seedNotificationPreferences: NotificationPreferences = {
 }
 
 export const seedWorkspacePreferences: WorkspacePreferences = {
-  autoAdvanceAfterResolve: true,
   markReadOnOpen: true,
   defaultInboxView: 'all',
 }

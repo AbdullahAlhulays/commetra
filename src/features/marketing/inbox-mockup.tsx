@@ -199,7 +199,7 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
         <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-muted">{row.text}</p>
 
         <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-2xs text-ink-muted">
-          <PlatformChip provider={row.provider} size="xs" />
+          <PlatformChip provider={row.provider} size="xs" labelled />
           <CategoryBadge category={row.category} />
           {isHidden(row) ? (
             <span className="flex items-center gap-1 text-ink-secondary">
@@ -225,8 +225,7 @@ function MockDetail({ row }: { row: MockRow }) {
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-ink">{row.name}</p>
           <div className="mt-0.5 flex items-center gap-1.5 text-2xs text-ink-muted">
-            <PlatformChip provider={row.provider} size="xs" />
-            <span className="latin">{PLATFORM_LABELS_BY_PROVIDER[row.provider]}</span>
+            <PlatformChip provider={row.provider} size="xs" labelled />
             <CategoryBadge category={row.category} />
           </div>
         </div>

@@ -139,7 +139,7 @@ export const mockInboxService: InboxService = {
       categories: [],
     })
 
-    const byStatus = { new: 0, open: 0, pending: 0, resolved: 0 } satisfies Record<WorkflowStatus, number>
+    const byStatus = { new: 0, open: 0 } satisfies Record<WorkflowStatus, number>
     const byCategory = {
       sales_intent: 0,
       customer_service: 0,

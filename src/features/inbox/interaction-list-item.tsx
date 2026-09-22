@@ -1,7 +1,6 @@
 import { CornerDownLeft, ImageIcon, Video } from 'lucide-react'
 import { CategoryBadge, VisibilityBadge } from '@/components/category-badge'
 import { AvatarWithPlatform, PlatformChip } from '@/components/platform/platform-chip'
-import { PLATFORM_LABELS_BY_PROVIDER } from '@/components/platform/platform-meta'
 import { StatusDot } from '@/components/status-indicator'
 import { Avatar } from '@/components/ui/avatar'
 import {
@@ -113,10 +112,10 @@ export function InteractionListItem({
               only joins them when the comment is off the post, or could not
               be taken off it. */}
           <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-ink-muted">
-            <span className="flex items-center gap-1">
-              <PlatformChip provider={interaction.provider} size="xs" />
-              <span>{PLATFORM_LABELS_BY_PROVIDER[interaction.provider]}</span>
-            </span>
+            {/* The chip is the only platform indicator here — the avatar
+                already carries one, so the name beside it was the third
+                telling. `labelled` keeps it announced for screen readers. */}
+            <PlatformChip provider={interaction.provider} size="xs" labelled />
 
             <CategoryBadge category={interaction.category} />
             <VisibilityBadge visibility={interaction.publicVisibility} />
