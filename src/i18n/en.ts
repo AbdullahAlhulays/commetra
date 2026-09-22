@@ -14,8 +14,9 @@ export const en: Dictionary = {
   nav: {
     sections: 'Page links',
     how: 'How it works',
-    pricing: 'Pricing',
+    compare: 'The difference',
     faq: 'FAQ',
+    start: 'Get started',
     login: 'Log in',
     signup: 'Start free',
     language: 'Language',
@@ -105,51 +106,6 @@ export const en: Dictionary = {
       {
         before: 'A comment going unanswered with nobody noticing',
         after: 'Every interaction carries a status until it is closed',
-      },
-    ],
-  },
-
-  pricing: {
-    title: 'A plan that fits your business',
-    popular: 'Most popular',
-    cta: 'Start free',
-    note: 'Every plan starts with a free trial, and you can cancel any time.',
-    plans: [
-      {
-        name: 'Free trial',
-        period: 'for 14 days',
-        summary: 'Try everything before you pay.',
-        features: [
-          'All four platforms',
-          'One account per platform',
-          'Automatic sorting for every interaction',
-          'One user',
-          'No credit card',
-        ],
-      },
-      {
-        name: 'Basic',
-        period: 'per month',
-        summary: 'For a shop run by one or two people.',
-        features: [
-          'Everything in the free trial',
-          'Two accounts per platform',
-          'Three users',
-          'Spam and complaints hidden',
-          'Full search and filtering',
-        ],
-      },
-      {
-        name: 'Professional',
-        period: 'per month',
-        summary: 'For a team covering several accounts.',
-        features: [
-          'Everything in Basic',
-          'Unlimited accounts',
-          'Ten users',
-          'Reports and follow-up statuses',
-          'Priority support',
-        ],
       },
     ],
   },

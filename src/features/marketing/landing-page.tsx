@@ -24,19 +24,7 @@ import { useCycledIndex } from './use-cycled-index'
  * Section ids, in page order. Ids are not copy, so they live here rather than
  * in the dictionary, and `useActiveSection` observes on this stable array.
  */
-const NAV_SECTION_IDS = ['how', 'pricing', 'faq']
-
-/*
- * !! PLACEHOLDER PRICING — NOT APPROVED.
- *
- * These amounts are stand-ins so the page has a pricing section to lay out.
- * No plan, price or limit has been signed off, and every one of them must be
- * replaced with the real commercial terms before this page is shown to
- * customers. They sit here rather than in the dictionary because an amount is
- * not copy — it does not change between languages.
- */
-const PLAN_PRICES = ['$0', '$19', '$50']
-const FEATURED_PLAN_INDEX = 2
+const NAV_SECTION_IDS = ['how', 'compare', 'faq', 'start'] as const
 
 /**
  * Tracks which section the visitor is reading, for the navbar.
@@ -45,7 +33,7 @@ const FEATURED_PLAN_INDEX = 2
  * screen, so at most one section is ever "current" and the highlight does not
  * flicker between two sections that are both partly visible.
  */
-function useActiveSection(ids: string[]): string | null {
+function useActiveSection(ids: readonly string[]): string | null {
   const [active, setActive] = useState<string | null>(null)
 
   useEffect(() => {
@@ -89,11 +77,7 @@ function Navbar() {
   const { t } = useLocale()
   const active = useActiveSection(NAV_SECTION_IDS)
   const scrolled = useIsScrolled()
-  const links = [
-    { id: 'how', label: t.nav.how },
-    { id: 'pricing', label: t.nav.pricing },
-    { id: 'faq', label: t.nav.faq },
-  ]
+  const links = NAV_SECTION_IDS.map((id) => ({ id, label: t.nav[id] }))
 
   return (
     <header
@@ -360,7 +344,7 @@ function BeforeAfter() {
   const { t } = useLocale()
 
   return (
-    <section className="px-4 py-16 sm:px-6">
+    <section id="compare" className="scroll-mt-24 px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <Reveal className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
@@ -415,86 +399,14 @@ function BeforeAfter() {
   )
 }
 
-function Pricing() {
-  const { t } = useLocale()
-
-  return (
-    <section
-      id="pricing"
-      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
-    >
-      <div className="mx-auto max-w-5xl">
-        <Reveal className="text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            {t.pricing.title}
-          </h2>
-        </Reveal>
-
-        <Reveal as="ul" mode="children" className="mt-10 grid gap-4 lg:grid-cols-3">
-          {t.pricing.plans.map((plan, index) => (
-            <li
-              key={plan.name}
-              className={cn(
-                'group flex flex-col rounded-xl border bg-canvas p-6 transition-[transform,box-shadow,border-color] duration-200 hover:shadow-md motion-safe:hover:-translate-y-1',
-                index === FEATURED_PLAN_INDEX
-                  ? 'border-brand-300 shadow-sm'
-                  : 'border-border hover:border-brand-300',
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <h3 className="text-md font-semibold text-ink">{plan.name}</h3>
-                {index === FEATURED_PLAN_INDEX ? (
-                  <span className="rounded-sm border border-brand-200 bg-brand-50 px-1.5 py-0.5 text-2xs font-medium text-brand-700">
-                    {t.pricing.popular}
-                  </span>
-                ) : null}
-              </div>
-
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{plan.summary}</p>
-
-              <p className="mt-5 flex items-baseline gap-2">
-                <span className="tabular text-3xl font-semibold tracking-tight text-ink">
-                  {PLAN_PRICES[index]}
-                </span>
-                <span className="text-xs text-ink-muted">{plan.period}</span>
-              </p>
-
-              <ul className="mt-5 flex-1 space-y-2.5 border-t border-border pt-5">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2">
-                    <Check className="mt-1 size-3.5 shrink-0 text-brand-600" aria-hidden />
-                    <span className="text-sm leading-relaxed text-ink-secondary">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                variant={index === FEATURED_PLAN_INDEX ? 'primary' : 'secondary'}
-                size="md"
-                className="mt-6 w-full"
-                asChild
-              >
-                <Link to="/register">{t.pricing.cta}</Link>
-              </Button>
-            </li>
-          ))}
-        </Reveal>
-
-        <Reveal delay={140}>
-          <p className="mt-6 text-center text-xs text-ink-muted">
-            {t.pricing.note}
-          </p>
-        </Reveal>
-      </div>
-    </section>
-  )
-}
-
 function Faq() {
   const { t } = useLocale()
 
   return (
-    <section id="faq" className="scroll-mt-24 px-4 py-16 sm:px-6">
+    <section
+      id="faq"
+      className="scroll-mt-24 border-y border-border bg-surface px-4 py-16 sm:px-6"
+    >
       <div className="mx-auto max-w-2xl">
         <Reveal>
           <h2 className="text-2xl font-semibold tracking-tight text-ink">{t.faq.title}</h2>
@@ -519,7 +431,7 @@ function FinalCta() {
   const { t } = useLocale()
 
   return (
-    <section className="px-4 pb-16 sm:px-6">
+    <section id="start" className="scroll-mt-24 px-4 pb-16 sm:px-6">
       <Reveal className="mx-auto max-w-5xl rounded-2xl bg-surface-inverse px-6 py-12 text-center sm:px-12">
         <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
           {t.finalCta.title}
@@ -547,11 +459,7 @@ function FinalCta() {
 
 function Footer() {
   const { t } = useLocale()
-  const links = [
-    { id: 'how', label: t.nav.how },
-    { id: 'pricing', label: t.nav.pricing },
-    { id: 'faq', label: t.nav.faq },
-  ]
+  const links = NAV_SECTION_IDS.map((id) => ({ id, label: t.nav[id] }))
 
   return (
     <footer id="footer" className="border-t border-border bg-surface px-4 py-10 sm:px-6">
@@ -683,7 +591,6 @@ export function LandingPage() {
         <Categories />
         <HowItWorks />
         <BeforeAfter />
-        <Pricing />
         <Faq />
         <FinalCta />
       </main>

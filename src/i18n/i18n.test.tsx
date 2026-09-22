@@ -16,14 +16,7 @@ describe('dictionary parity', () => {
     expect(en.steps.items).toHaveLength(ar.steps.items.length)
     expect(en.comparison.items).toHaveLength(ar.comparison.items.length)
     expect(en.faq.items).toHaveLength(ar.faq.items.length)
-    expect(en.pricing.plans).toHaveLength(ar.pricing.plans.length)
     expect(en.mockup.rows).toHaveLength(ar.mockup.rows.length)
-  })
-
-  it('matches the feature list length inside every plan', () => {
-    ar.pricing.plans.forEach((plan, index) => {
-      expect(en.pricing.plans[index]?.features).toHaveLength(plan.features.length)
-    })
   })
 
   it('covers every interaction category in both languages', () => {

@@ -38,26 +38,32 @@
   --ink-faint: #94a3b8;
   --ink-inverse: #ffffff;
 
-  /* Brand — teal. 500 is the identity colour; `solid` is the lightest shade
-     that still clears 4.5:1 against white text, so buttons stay accessible. */
-  --brand-50: #f0fbfa;
-  --brand-100: #d7f5f3;
-  --brand-200: #aeeae8;
-  --brand-300: #76d9d6;
-  --brand-400: #34c2c0;
-  --brand-500: #0ea5a4;
-  --brand-600: #0a8382;
-  --brand-700: #0c6e6d;
-  --brand-800: #0f5756;
-  --brand-900: #114645;
+  /* Brand — navy. The scale is anchored at 900 on #0f172a, the same value as
+     `--ink` and `--surface-inverse`, so headings, the dark CTA panel and the
+     deepest brand shade are one colour rather than three that nearly match.
+     500 is the identity; `solid` is 600, light enough to read as blue against
+     near-black body text and dark enough to clear 4.5:1 under white. */
+  --brand-50: #f4f6fb;
+  --brand-100: #e6eaf5;
+  --brand-200: #cbd4e9;
+  --brand-300: #a4b2d6;
+  --brand-400: #7488bd;
+  --brand-500: #4c62a0;
+  --brand-600: #3a4d83;
+  --brand-700: #2d3c67;
+  --brand-800: #20294a;
+  --brand-900: #0f172a;
 
   --brand: var(--brand-500);
-  --brand-solid: #0a8382;
-  --brand-solid-hover: #097776;
-  --brand-text: #0c6e6d;
+  --brand-solid: #3a4d83;
+  --brand-solid-hover: #2d3c67;
+  --brand-text: #2d3c67;
 
-  /* Accent — orange. Deliberately scarce: reconnect prompts and the single
-     "unreplied" emphasis. Never a decorative fill. */
+  /* Accent — orange, navy's complement and the warm counterweight to a cool
+     palette. Stays orange rather than shifting amber so it cannot be mistaken
+     for `--warning`, which is the whole point of having both. Kept scarce:
+     reconnect prompts and the single "unreplied" emphasis, never a
+     decorative fill. */
   --accent: #f97316;
   --accent-strong: #c2410c;
   --accent-surface: #fff7ed;
@@ -79,7 +85,7 @@
   --danger-surface: #fef2f2;
   --danger-border: #fecaca;
 
-  --focus-ring: #0ea5a4;
+  --focus-ring: #4c62a0;
 }
 
 @theme inline {
