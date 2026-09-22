@@ -9,8 +9,12 @@ import { LOCALE_CODES, LOCALE_NAMES } from './locale'
  * would get rather than a segmented control showing the one you already have.
  *
  * Built from `Button` rather than styled by hand, so it inherits the exact
- * height and padding of the sign-in button beside it. A bespoke bordered box
- * next to real buttons is what made the previous one sit off the line.
+ * height and padding of the controls beside it. A bespoke box next to real
+ * buttons is what made the previous one sit off the line.
+ *
+ * `secondary` rather than `ghost`: the outline is what makes it findable next
+ * to a ghost sign-in link, and it still reads as quieter than the primary
+ * call to action, which is the order of importance these three have.
  */
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { locale, setLocale, t } = useLocale()
@@ -18,7 +22,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 
   return (
     <Button
-      variant="ghost"
+      variant="secondary"
       size="md"
       onClick={() => setLocale(next)}
       aria-label={t.nav.switchLanguage(LOCALE_NAMES[next])}

@@ -13,7 +13,7 @@ export const ar = {
   nav: {
     sections: 'روابط الصفحة',
     how: 'كيف تعمل؟',
-    compare: 'الفرق',
+    compare: 'ماذا تستفيد؟',
     faq: 'الأسئلة الشائعة',
     start: 'ابدأ',
     login: 'تسجيل الدخول',

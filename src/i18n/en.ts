@@ -14,7 +14,7 @@ export const en: Dictionary = {
   nav: {
     sections: 'Page links',
     how: 'How it works',
-    compare: 'The difference',
+    compare: 'What you get',
     faq: 'FAQ',
     start: 'Get started',
     login: 'Log in',

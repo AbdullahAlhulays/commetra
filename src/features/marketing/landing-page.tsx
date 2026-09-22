@@ -101,7 +101,7 @@ function Navbar() {
               href={`#${link.id}`}
               aria-current={active === link.id ? 'location' : undefined}
               className={cn(
-                'rounded-md px-3.5 py-2 text-sm font-medium transition-colors hover:bg-surface-sunken hover:text-ink',
+                'rounded-md px-3.5 py-2 text-base font-medium transition-colors hover:bg-surface-sunken hover:text-ink',
                 active === link.id ? 'bg-surface-sunken text-ink' : 'text-ink-secondary',
               )}
             >
