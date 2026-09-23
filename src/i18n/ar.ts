@@ -17,7 +17,7 @@ export const ar = {
     faq: 'الأسئلة الشائعة',
     start: 'ابدأ',
     login: 'تسجيل الدخول',
-    signup: 'ابدأ مجانًا',
+    signup: 'جرب مجانا',
     switchLanguage: (name: string) => `التبديل إلى ${name}`,
   },
 

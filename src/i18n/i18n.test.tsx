@@ -33,6 +33,7 @@ describe('switching language', () => {
     renderWithProviders(<LandingPage />)
 
     expect(screen.getByRole('heading', { level: 1, name: ar.hero.title })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'جرب مجانا' }).length).toBeGreaterThan(0)
     expect(document.documentElement.dir).toBe('rtl')
     expect(document.documentElement.lang).toBe('ar')
   })
