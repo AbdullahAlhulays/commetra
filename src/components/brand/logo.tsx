@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import { useLocale } from '@/i18n/locale-provider'
 
 /**
  * The identity.
@@ -27,6 +28,8 @@ export function LogoMark({ className }: { className?: string }) {
 }
 
 export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
+  const { locale } = useLocale()
+
   if (compact) {
     return (
       <span className={cn('inline-flex items-center', className)}>
@@ -36,12 +39,14 @@ export function Logo({ className, compact = false }: { className?: string; compa
     )
   }
 
+  const isArabic = locale === 'ar'
+
   return (
     <img
-      src="/logo.png"
-      alt="Comment"
-      width={640}
-      height={146}
+      src={isArabic ? '/logo-ar.png' : '/logo.png'}
+      alt={isArabic ? 'كومنت' : 'Comment'}
+      width={isArabic ? 2160 : 640}
+      height={isArabic ? 728 : 146}
       className={cn('h-7 w-auto shrink-0 object-contain', className)}
     />
   )

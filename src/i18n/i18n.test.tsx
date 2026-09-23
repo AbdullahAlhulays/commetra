@@ -34,6 +34,7 @@ describe('switching language', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: ar.hero.title })).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'جرب مجانا' }).length).toBeGreaterThan(0)
+    expect(screen.getAllByAltText('كومنت').length).toBeGreaterThan(0)
     expect(document.documentElement.dir).toBe('rtl')
     expect(document.documentElement.lang).toBe('ar')
   })
@@ -45,6 +46,8 @@ describe('switching language', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: en.hero.title })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1, name: ar.hero.title })).not.toBeInTheDocument()
+    expect(screen.getAllByAltText('Comment').length).toBeGreaterThan(0)
+    expect(screen.queryByAltText('كومنت')).not.toBeInTheDocument()
 
     // Direction lives on the document, not in React: CSS logical properties and
     // the browser's own bidi handling both read it from there.
