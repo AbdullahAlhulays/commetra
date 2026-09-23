@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { LandingPage } from '@/features/marketing/landing-page'
 import { renderWithProviders } from '@/test/utils'
@@ -59,5 +59,13 @@ describe('switching language', () => {
     expect(await screen.findByText(en.mockup.org)).toBeInTheDocument()
     // The first row's name shows twice: in the list and in the open detail pane.
     expect(screen.getAllByText(en.mockup.rows[0]!.name).length).toBeGreaterThan(0)
+
+    const mockup = screen.getByText(en.mockup.org).closest('[aria-hidden="true"]')
+    expect(mockup).not.toBeNull()
+    const preview = within(mockup as HTMLElement)
+    expect(preview.getAllByText(en.categories.labels.sales_intent).length).toBeGreaterThan(0)
+    expect(preview.getAllByText(en.categories.labels.positive).length).toBeGreaterThan(0)
+    expect(preview.queryByText(ar.categories.labels.sales_intent)).not.toBeInTheDocument()
+    expect(preview.queryByText(ar.categories.labels.positive)).not.toBeInTheDocument()
   })
 })

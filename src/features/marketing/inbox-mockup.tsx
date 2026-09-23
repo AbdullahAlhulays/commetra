@@ -200,7 +200,7 @@ function MockListRow({ row, selected }: { row: MockRow; selected: boolean }) {
 
         <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-2xs text-ink-muted">
           <PlatformChip provider={row.provider} size="xs" labelled />
-          <CategoryBadge category={row.category} />
+          <CategoryBadge category={row.category} label={t.categories.labels[row.category]} />
           {isHidden(row) ? (
             <span className="flex items-center gap-1 text-ink-secondary">
               <EyeOff className="size-3" />
@@ -226,7 +226,7 @@ function MockDetail({ row }: { row: MockRow }) {
           <p className="truncate text-sm font-semibold text-ink">{row.name}</p>
           <div className="mt-0.5 flex items-center gap-1.5 text-2xs text-ink-muted">
             <PlatformChip provider={row.provider} size="xs" labelled />
-            <CategoryBadge category={row.category} />
+            <CategoryBadge category={row.category} label={t.categories.labels[row.category]} />
           </div>
         </div>
         <StatusBadge status={row.status} className="shrink-0" />
