@@ -21,6 +21,8 @@ and sampled session replays to Sentry. The browser DSN and sampling rates are in
 `src/instrument.ts`. Tracing samples 100% of transactions; replay samples 10%
 of sessions and 100% of sessions with errors. Trace headers are limited to
 requests to the site's own origin. Monitoring is disabled in local development.
+To verify production reporting, open `/sentry-test` and click **Break the world**;
+the button intentionally throws one test error.
 
 ## Pages
 

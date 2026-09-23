@@ -38,6 +38,12 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        path: '/sentry-test',
+        lazy: async () => ({
+          Component: (await import('@/features/monitoring/sentry-test-page')).SentryTestPage,
+        }),
+      },
+      {
         // Outside RedirectIfAuthenticated on purpose: the page decides where an
         // already-signed-in visitor goes rather than bouncing them to login.
         path: '/demo',
