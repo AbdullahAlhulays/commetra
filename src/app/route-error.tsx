@@ -1,5 +1,7 @@
+import * as Sentry from '@sentry/react'
 import { AlertTriangle } from 'lucide-react'
-import { Link, useRouteError } from 'react-router-dom'
+import { useEffect } from 'react'
+import { isRouteErrorResponse, Link, useRouteError } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useLocale } from '@/i18n/locale-provider'
 import { toUserMessage } from '@/services'
@@ -13,6 +15,14 @@ import { toUserMessage } from '@/services'
 export function RouteError() {
   const { t } = useLocale()
   const error = useRouteError()
+
+  useEffect(() => {
+    // React Router catches loader and route errors before they reach the root.
+    // Expected 4xx responses are navigation outcomes, not application crashes.
+    if (error && (!isRouteErrorResponse(error) || error.status >= 500)) {
+      Sentry.captureException(error)
+    }
+  }, [error])
 
   if (import.meta.env.DEV) {
     console.error('Route error:', error)
