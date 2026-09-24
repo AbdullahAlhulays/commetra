@@ -47,7 +47,7 @@ export function Logo({ className, compact = false }: { className?: string; compa
       alt={isArabic ? 'كومنت' : 'Comment'}
       width={isArabic ? 2160 : 640}
       height={isArabic ? 728 : 146}
-      className={cn('h-7 w-auto shrink-0 object-contain', className)}
+      className={cn(isArabic ? 'h-10' : 'h-7', 'w-auto shrink-0 object-contain', className)}
     />
   )
 }
