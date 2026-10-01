@@ -9,9 +9,9 @@ describe('LandingPage', () => {
     renderWithProviders(<LandingPage />)
 
     expect(
-      screen.getByRole('heading', { level: 1, name: /كل تعليقات ورسائل عملائك في مكان واحد/ }),
+      screen.getByRole('heading', { level: 1, name: /تعليقات ورسائل عملائك في مكان واحد/ }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/في صندوق واحد، مصنّفة لك تلقائيًا/)).toBeInTheDocument()
+    expect(screen.getByText(/تعليقات TikTok وتعليقات ورسائل القنوات الأخرى/)).toBeInTheDocument()
   })
 
   it('shows every revealed block when IntersectionObserver is unavailable', () => {
@@ -70,17 +70,16 @@ describe('LandingPage', () => {
   })
 
   it('keeps the platform limitation on the page, in the FAQ', async () => {
-    // The cards no longer spell capabilities out — the page is deliberately
-    // simpler now — so the FAQ is the one place that still has to be honest
-    // about the two networks that cannot hide a comment at all.
-    expect(PROVIDER_CAPABILITIES.tiktok.canHideComments).toBe(false)
+    // The FAQ reflects the capability of this version without asserting that
+    // the TikTok API can never hide a comment.
+    expect(PROVIDER_CAPABILITIES.tiktok.canHideComments).toBe(true)
     expect(PROVIDER_CAPABILITIES.x.canHideComments).toBe(false)
 
     const { user } = renderWithProviders(<LandingPage />)
     await user.click(screen.getByRole('button', { name: /ماذا يحدث للتعليقات السلبية والسبام؟/ }))
 
     expect(
-      await screen.findByText(/لا تتيحان إخفاء التعليقات من خارج تطبيقهما/),
+      await screen.findByText(/لا تُغيّر هذه الإجراءات أي تعليق على TikTok الحقيقي/),
     ).toBeInTheDocument()
   })
 

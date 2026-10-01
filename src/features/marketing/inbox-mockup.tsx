@@ -54,7 +54,7 @@ interface RowShape {
  *
  * Read from the same domain resolver the product uses, so the marketing
  * mockup cannot claim a comment was hidden on a network that gives us no way
- * to hide it — TikTok and X rows will never show the badge.
+ * to hide it — X rows will never show the hidden badge in this prototype.
  */
 function isHidden(row: RowShape): boolean {
   return (

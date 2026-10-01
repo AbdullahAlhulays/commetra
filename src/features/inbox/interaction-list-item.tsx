@@ -12,6 +12,7 @@ import {
 } from '@/domain'
 import { cn } from '@/lib/cn'
 import { formatAbsolute, formatCompactTime } from '@/lib/format'
+import { IS_MOCK_BACKEND } from '@/services'
 
 /**
  * One row in the interaction list.
@@ -118,7 +119,12 @@ export function InteractionListItem({
             <PlatformChip provider={interaction.provider} size="xs" labelled />
 
             <CategoryBadge category={interaction.category} />
-            <VisibilityBadge visibility={interaction.publicVisibility} />
+            <VisibilityBadge
+              visibility={interaction.publicVisibility}
+              label={interaction.provider === 'tiktok' && interaction.publicVisibility === 'hidden' && IS_MOCK_BACKEND
+                ? 'إخفاء تجريبي'
+                : undefined}
+            />
 
             <span aria-hidden className="text-border-strong">
               ·

@@ -77,6 +77,7 @@ export interface InboxService {
   get(id: InteractionId): Promise<Interaction>
   setRead(id: InteractionId, isRead: boolean): Promise<Interaction>
   setStatus(id: InteractionId, status: WorkflowStatus): Promise<Interaction>
+  setCommentVisibility(id: InteractionId, hidden: boolean): Promise<Interaction>
   reply(input: SendReplyInput): Promise<Reply>
 }
 

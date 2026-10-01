@@ -177,12 +177,13 @@ describe('reply capability', () => {
     expect(await screen.findByLabelText(/اكتب ردك على منيرة القحطاني/)).toBeInTheDocument()
   })
 
-  it('replaces the composer with an explanation on TikTok', async () => {
+  it('offers a TikTok reply composer with a clear demo notice', async () => {
     const { user } = renderInbox()
     await user.click(await screen.findByText('وليد العمري'))
 
-    expect(await screen.findByText(/لا تتيح واجهة هذه المنصة الرد على التعليقات/)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'إرسال' })).not.toBeInTheDocument()
+    expect(await screen.findByLabelText(/اكتب ردك على وليد العمري/)).toBeInTheDocument()
+    expect(screen.getByText('وهل تناسب الطحن للقهوة المقطرة؟')).toBeInTheDocument()
+    expect(screen.getByText(/لا يُرسل أي إجراء إلى TikTok/)).toBeInTheDocument()
   })
 
   it('explains that an account needing re-authorisation cannot reply', async () => {
@@ -204,6 +205,27 @@ describe('sending a reply', () => {
 
     expect(await screen.findByText('نعم متوفرة، تفضل بالطلب من المتجر.')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText('ردّك')).toBeInTheDocument())
+  })
+
+  it('shows a simulated TikTok reply in the thread', async () => {
+    const { user } = renderInbox('/app/inbox/int_tt_01')
+    const composer = await screen.findByLabelText(/اكتب ردك على وليد العمري/)
+    await user.type(composer, 'استخدمنا طاحونة V60.')
+    await user.click(screen.getByRole('button', { name: 'إرسال' }))
+    expect(await screen.findByText('استخدمنا طاحونة V60.')).toBeInTheDocument()
+    expect(screen.getByText(/لا يُرسل أي إجراء إلى TikTok/)).toBeInTheDocument()
+  })
+
+  it('simulates hiding and restoring a TikTok comment', async () => {
+    const { user } = renderInbox('/app/inbox/int_tt_01')
+    await screen.findByLabelText(/اكتب ردك على وليد العمري/)
+    await user.click(screen.getByRole('button', { name: 'إجراءات أخرى' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'إخفاء التعليق تجريبيًا' }))
+    expect(await screen.findByText(/محاكاة إخفاء التعليق/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'إجراءات أخرى' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'إظهار التعليق تجريبيًا' }))
+    await waitFor(() => expect(screen.queryByText(/محاكاة إخفاء التعليق/)).not.toBeInTheDocument())
   })
 
   it('surfaces a provider failure and keeps a retry available', async () => {
@@ -250,10 +272,9 @@ describe('sending a reply', () => {
 
     await waitFor(() => {
       const rows = listRowTexts()
-      // Meta rows report the comment taken down; TikTok and X cannot, so they
-      // must not carry the badge that says it was.
+      // The X row remains visible while hideable mock accounts show a hidden state.
       expect(rows.some((text) => text.includes('مخفي عن المنشور'))).toBe(true)
-      expect(rows.some((text) => text.includes('لا تتيح المنصة إخفاءه'))).toBe(true)
+      expect(rows.some((text) => text.includes('لم يُخفَ عن المنشور'))).toBe(true)
     })
   })
 })

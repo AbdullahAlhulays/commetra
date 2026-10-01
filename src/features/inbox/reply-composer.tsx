@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/toast'
 import type { ConnectedAccount, Interaction, ReplyAvailability } from '@/domain'
 import { resolveReplyAvailability } from '@/domain'
 import { useSendReply } from './use-inbox'
+import { IS_MOCK_BACKEND } from '@/services'
 
 function UnavailableNotice({ availability }: { availability: Extract<ReplyAvailability, { canReply: false }> }) {
   const isConnection = availability.kind === 'connection'
@@ -72,7 +73,7 @@ export function ReplyComposer({
       {
         onSuccess: () => {
           setText('')
-          toast.success('تم إرسال الرد')
+          toast.success(interaction.provider === 'tiktok' && IS_MOCK_BACKEND ? 'تمت محاكاة إرسال الرد' : 'تم إرسال الرد')
           textareaRef.current?.focus()
         },
       },

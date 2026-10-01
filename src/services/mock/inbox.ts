@@ -185,6 +185,22 @@ export const mockInboxService: InboxService = {
     return mutate(id, (interaction) => ({ ...interaction, status }))
   },
 
+  async setCommentVisibility(id, hidden) {
+    await delay('write')
+    const interaction = findOrThrow(id)
+    const account = getDb().accounts.find((candidate) => candidate.id === interaction.connectedAccountId)
+    if (interaction.type !== 'comment' || !account?.capabilities.canHideComments) {
+      throw new ServiceError('capability_unsupported', 'إخفاء هذا التعليق غير متاح لهذا الحساب.', { retryable: false })
+    }
+    if (account.status !== 'connected' && account.status !== 'syncing') {
+      throw new ServiceError('account_needs_reconnect', 'أعد ربط الحساب قبل تغيير ظهور التعليق.', { retryable: false })
+    }
+    return mutate(id, (current) => ({
+      ...current,
+      publicVisibility: hidden ? 'hidden' : 'public',
+    }))
+  },
+
   async reply({ interactionId, text }: SendReplyInput): Promise<Reply> {
     await delay('write')
     const db = getDb()

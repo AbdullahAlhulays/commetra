@@ -128,7 +128,7 @@ function DemoBadge() {
   if (!IS_MOCK_BACKEND) return null
   return (
     <Tooltip content="هذه نسخة تجريبية تعمل ببيانات وهمية. لم يتم ربط أي منصة تواصل فعلية بعد.">
-      <span className="hidden cursor-default rounded-sm border border-border bg-surface-sunken px-1.5 py-0.5 text-2xs font-medium text-ink-muted sm:inline-block">
+      <span className="cursor-default rounded-sm border border-border bg-surface-sunken px-1.5 py-0.5 text-2xs font-medium text-ink-muted">
         بيانات تجريبية
       </span>
     </Tooltip>

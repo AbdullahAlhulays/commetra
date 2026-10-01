@@ -16,6 +16,7 @@ import { PLATFORM_LABELS_BY_PROVIDER } from '@/components/platform/platform-meta
 import { StatusBadge, StatusDot } from '@/components/status-indicator'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { toast } from '@/components/ui/toast'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,10 +36,11 @@ import {
 } from '@/domain'
 import { cn } from '@/lib/cn'
 import { formatAbsolute, formatRelativeTime } from '@/lib/format'
+import { IS_MOCK_BACKEND, toUserMessage } from '@/services'
 import { MediaPreview } from './media-preview'
 import { OriginalContentPanel } from './original-content'
 import { ReplyComposer } from './reply-composer'
-import { useSetRead, useSetStatus } from './use-inbox'
+import { useSetCommentVisibility, useSetRead, useSetStatus } from './use-inbox'
 
 function MessageBubble({
   align,
@@ -149,8 +151,8 @@ function useMarkReadOnOpen(interaction: Interaction | undefined, enabled: boolea
  * What happened to this comment on the post it came from.
  *
  * Only rendered when there is something to say. `cannot_hide` is the case that
- * earns a warning: the business flagged the comment, and it is still live
- * under the post because the network gives us no way to take it down.
+ * earns a warning: the business flagged the comment, but this connection
+ * did not hide it from the post.
  */
 function VisibilityNotice({ interaction }: { interaction: Interaction }) {
   if (interaction.publicVisibility === 'hidden') {
@@ -158,8 +160,9 @@ function VisibilityNotice({ interaction }: { interaction: Interaction }) {
       <div className="flex items-start gap-2.5 rounded-lg border border-border bg-surface-sunken px-3 py-2.5">
         <EyeOff className="mt-0.5 size-3.5 shrink-0 text-ink-muted" aria-hidden />
         <p className="text-2xs leading-relaxed text-ink-secondary">
-          صُنّف هذا التعليق ضمن «{INTERACTION_CATEGORY_LABELS[interaction.category]}» وأُخفي عن
-          المنشور، فلا يظهر لبقية المتابعين. يبقى هنا لتقرأه وترد عليه متى شئت.
+          {interaction.provider === 'tiktok' && IS_MOCK_BACKEND
+            ? 'محاكاة إخفاء التعليق: لم يتغير ظهوره على TikTok الحقيقي. يبقى هنا لتقرأه وترد عليه.'
+            : <>صُنّف هذا التعليق ضمن «{INTERACTION_CATEGORY_LABELS[interaction.category]}» وأُخفي عن المنشور، فلا يظهر لبقية المتابعين. يبقى هنا لتقرأه وترد عليه متى شئت.</>}
         </p>
       </div>
     )
@@ -171,8 +174,8 @@ function VisibilityNotice({ interaction }: { interaction: Interaction }) {
         <ShieldAlert className="mt-0.5 size-3.5 shrink-0 text-warning-strong" aria-hidden />
         <p className="text-2xs leading-relaxed text-warning-strong">
           صُنّف هذا التعليق ضمن «{INTERACTION_CATEGORY_LABELS[interaction.category]}»، لكن{' '}
-          {PLATFORM_LABELS_BY_PROVIDER[interaction.provider]} لا تتيح إخفاء التعليقات من خارج
-          التطبيق. ما زال ظاهرًا على المنشور، ويمكنك إخفاؤه من التطبيق مباشرة.
+          لم تُخفِه هذه النسخة من Comment على {PLATFORM_LABELS_BY_PROVIDER[interaction.provider]}.
+          ما زال ظاهرًا على المنشور؛ يمكنك مراجعته في تطبيق المنصة.
         </p>
       </div>
     )
@@ -202,6 +205,7 @@ export function InteractionDetail({
 }) {
   const setStatus = useSetStatus()
   const setRead = useSetRead()
+  const setVisibility = useSetCommentVisibility()
 
   useMarkReadOnOpen(interaction, markReadOnOpen)
 
@@ -225,6 +229,20 @@ export function InteractionDetail({
         />
       </div>
     )
+  }
+
+  const canModerateTikTokComment =
+    interaction.provider === 'tiktok' &&
+    interaction.type === 'comment' &&
+    interaction.capabilities.canHideComments &&
+    (account?.status === 'connected' || account?.status === 'syncing')
+
+  function handleVisibilityChange(hidden: boolean) {
+    if (!interaction) return
+    setVisibility.mutate({ id: interaction.id, hidden }, {
+      onSuccess: () => toast.success(hidden ? 'تمت محاكاة إخفاء التعليق' : 'تمت محاكاة إظهار التعليق'),
+      onError: (mutationError) => toast.error(toUserMessage(mutationError)),
+    })
   }
 
   return (
@@ -307,12 +325,26 @@ export function InteractionDetail({
                 {interaction.isRead ? <Mail aria-hidden /> : <MailOpen aria-hidden />}
                 {interaction.isRead ? 'تعليم كغير مقروء' : 'تعليم كمقروء'}
               </DropdownMenuItem>
+              {canModerateTikTokComment ? (
+                <DropdownMenuItem
+                  disabled={setVisibility.isPending}
+                  onSelect={() => handleVisibilityChange(interaction.publicVisibility !== 'hidden')}
+                >
+                  <EyeOff aria-hidden />
+                  {interaction.publicVisibility === 'hidden' ? 'إظهار التعليق تجريبيًا' : 'إخفاء التعليق تجريبيًا'}
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </header>
 
       <div className="scrollbar-thin min-h-0 flex-1 space-y-4 overflow-y-auto px-3 py-4 sm:px-4">
+        {interaction.provider === 'tiktok' && IS_MOCK_BACKEND ? (
+          <p className="rounded-lg border border-dashed border-border bg-surface-subtle px-3 py-2.5 text-xs leading-relaxed text-ink-muted">
+            عرض تجريبي: التعليقات والردود وإخفاء التعليقات بيانات ومحاكاة داخل Comment فقط. لا يُرسل أي إجراء إلى TikTok.
+          </p>
+        ) : null}
         <VisibilityNotice interaction={interaction} />
 
         <OriginalContentPanel interaction={interaction} />

@@ -360,6 +360,7 @@ const SEEDS: InteractionSeed[] = [
     at: 15,
     category: 'sales_intent',
     status: 'new',
+    thread: [{ by: 'customer', text: 'وهل تناسب الطحن للقهوة المقطرة؟', at: 14 }],
     context: {
       excerpt: 'طريقة تحضير V60 خطوة بخطوة ☕️',
       at: 60 * 5,
@@ -831,8 +832,7 @@ const SEEDS: InteractionSeed[] = [
   },
   /*
    * Junk. Every network gets some, and the two Meta accounts show it taken
-   * off the post while TikTok and X show what happens when the network gives
-   * us no way to do that.
+     * off the post in the Meta and TikTok mock, while X remains visible.
    */
   {
     id: 'int_ig_10',

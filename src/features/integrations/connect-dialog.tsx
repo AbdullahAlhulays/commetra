@@ -52,7 +52,9 @@ export function ConnectDialog({
             <div>
               <DialogTitle>ربط حساب {PLATFORM_LABELS_BY_PROVIDER[provider]}</DialogTitle>
               <DialogDescription>
-                ستحتاج إلى منح Comment صلاحية قراءة التعليقات والرسائل والرد عليها.
+                {provider === 'tiktok'
+                  ? 'في الربط الفعلي، سيفوّض صاحب حساب TikTok قراءة تعليقات فيديوهاته وسياقها والرد عليها وإخفاءها.'
+                  : 'ستحتاج إلى منح Comment الصلاحيات المعروضة أدناه لهذا الحساب.'}
               </DialogDescription>
             </div>
           </div>
@@ -62,7 +64,9 @@ export function ConnectDialog({
           {error ? <InlineError error={error} /> : null}
 
           <div>
-            <p className="text-xs font-medium text-ink-secondary">ما الذي ستتيحه هذه المنصة</p>
+            <p className="text-xs font-medium text-ink-secondary">
+              {provider === 'tiktok' ? 'نطاق TikTok المقصود في طلب الوصول' : 'ما الذي ستتيحه هذه المنصة'}
+            </p>
             <ul className="mt-2 space-y-1.5">
               {supported.map((item) => (
                 <li key={item} className="flex items-center gap-2 text-xs text-ink-secondary">
@@ -76,11 +80,18 @@ export function ConnectDialog({
                     <span className="h-px w-2.5 bg-ink-faint" />
                   </span>
                   <span className="line-through decoration-border-strong">{item}</span>
-                  <span className="text-2xs">(غير مدعوم حاليًا)</span>
+                  <span className="text-2xs">(غير متاح في هذه النسخة)</span>
                 </li>
               ))}
             </ul>
           </div>
+
+          {provider === 'tiktok' ? (
+            <p className="text-xs leading-relaxed text-ink-muted">
+              لا يشمل هذا الطلب رسائل TikTok الخاصة أو نشر الفيديوهات.
+              سيبقى تنظيم التعليقات وتغيير حالة المتابعة داخل Comment فقط.
+            </p>
+          ) : null}
 
           <div className="flex items-start gap-2.5 rounded-lg border border-dashed border-border bg-surface-subtle p-3">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink-faint" aria-hidden />
@@ -93,7 +104,7 @@ export function ConnectDialog({
 
         <DialogFooter>
           <Button variant="primary" onClick={onConfirm} loading={isPending}>
-            {isPending ? 'جاري الربط' : 'متابعة الربط'}
+            {isPending ? 'جاري الربط' : provider === 'tiktok' ? 'إنشاء حساب تجريبي' : 'متابعة الربط'}
           </Button>
           <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={isPending}>
             إلغاء

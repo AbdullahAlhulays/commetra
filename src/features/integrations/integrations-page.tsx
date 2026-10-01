@@ -1,5 +1,6 @@
 import { MoreHorizontal, Plus, RefreshCw, RotateCw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { PlatformChip } from '@/components/platform/platform-chip'
 import { PLATFORM_LABELS_BY_PROVIDER, PLATFORM_ORDER } from '@/components/platform/platform-meta'
 import { ErrorState } from '@/components/states'
@@ -152,7 +153,7 @@ function ProviderSection({
             {accounts.length === 0
               ? 'لا توجد حسابات مرتبطة'
               : `${accounts.length} ${accounts.length === 1 ? 'حساب مرتبط' : 'حسابات مرتبطة'}`}
-            {unsupported.length > 0 ? ` · لا يدعم: ${unsupported.join('، ')}` : ''}
+            {unsupported.length > 0 ? ` · غير متاح هنا: ${unsupported.join('، ')}` : ''}
           </p>
         </div>
         <Button variant="secondary" size="sm" onClick={onConnect}>
@@ -160,6 +161,21 @@ function ProviderSection({
           ربط حساب
         </Button>
       </div>
+
+      {provider === 'tiktok' ? (
+        <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle bg-surface px-3 py-3 sm:px-4">
+          <p className="min-w-0 flex-1 text-xs leading-relaxed text-ink-secondary">
+            نموذج TikTok: قراءة تعليقات فيديوهات الحساب المصرّح به والرد عليها وإخفاؤها من صندوق واحد.
+            جميع البيانات والإجراءات هنا تجريبية؛ يتطلب التشغيل الفعلي موافقة TikTok وتفويض صاحب الحساب.
+          </p>
+          <Link
+            to="/app/inbox?platform=tiktok&type=comment"
+            className="shrink-0 text-xs font-medium text-brand-text hover:underline"
+          >
+            عرض تعليقات TikTok التجريبية
+          </Link>
+        </div>
+      ) : null}
 
       {accounts.length > 0 ? (
         <div className="divide-y divide-border-subtle">

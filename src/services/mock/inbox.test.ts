@@ -213,11 +213,19 @@ describe('inbox mutations', () => {
 })
 
 describe('reply capability enforcement', () => {
-  it('refuses a comment reply on a provider that does not support it', async () => {
-    // TikTok comment replies are outside the access tier we model.
+  it('refuses a TikTok reply when the connected account lacks that capability', async () => {
+    const account = getDb().accounts.find((candidate) => candidate.id === ACCOUNT_IDS.tiktok)
+    if (!account) throw new Error('missing TikTok seed account')
+    account.capabilities = { ...account.capabilities, canReplyToComments: false }
     await expect(
       mockInboxService.reply({ interactionId: 'int_tt_01', text: 'شكراً لك' }),
     ).rejects.toMatchObject({ code: 'capability_unsupported', retryable: false })
+  })
+
+  it('adds a simulated TikTok comment reply when the account permits it', async () => {
+    const reply = await mockInboxService.reply({ interactionId: 'int_tt_01', text: 'الطاحونة المستخدمة هي V60.' })
+    expect(reply.state).toBe('sent')
+    expect((await mockInboxService.get('int_tt_01')).replies).toContainEqual(reply)
   })
 
   it('refuses a reply on an account that needs re-authorisation', async () => {
@@ -318,15 +326,22 @@ describe('category filtering', () => {
     }
   })
 
-  it('hides flagged comments on Meta and flags them as unhideable elsewhere', async () => {
+  it('marks flagged comments hidden in the Meta and TikTok mock, but not on X', async () => {
     const page = await mockInboxService.list({ ...base, categories: ['spam'], limit: 100 })
 
-    const meta = page.items.filter((item) => item.provider === 'instagram' || item.provider === 'facebook')
-    const others = page.items.filter((item) => item.provider === 'tiktok' || item.provider === 'x')
+    const hideable = page.items.filter((item) => item.provider !== 'x')
+    const x = page.items.filter((item) => item.provider === 'x')
 
-    expect(meta.length).toBeGreaterThan(0)
-    expect(others.length).toBeGreaterThan(0)
-    expect(meta.every((item) => item.publicVisibility === 'hidden')).toBe(true)
-    expect(others.every((item) => item.publicVisibility === 'cannot_hide')).toBe(true)
+    expect(hideable.length).toBeGreaterThan(0)
+    expect(x.length).toBeGreaterThan(0)
+    expect(hideable.every((item) => item.publicVisibility === 'hidden')).toBe(true)
+    expect(x.every((item) => item.publicVisibility === 'cannot_hide')).toBe(true)
+  })
+
+  it('toggles TikTok comment visibility in the demo and rejects an unsupported account', async () => {
+    expect((await mockInboxService.setCommentVisibility('int_tt_01', true)).publicVisibility).toBe('hidden')
+    expect((await mockInboxService.setCommentVisibility('int_tt_01', false)).publicVisibility).toBe('public')
+    await expect(mockInboxService.setCommentVisibility('int_x_01', true))
+      .rejects.toMatchObject({ code: 'capability_unsupported' })
   })
 })

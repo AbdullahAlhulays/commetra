@@ -55,7 +55,7 @@ export function ConnectionStatusBadge({
  * Plain-language capability summary.
  *
  * Shown because a business needs to know *before* connecting that, say,
- * TikTok will not let them answer comments from here — discovering that after
+ * a connection cannot handle a particular action — discovering that after
  * the fact is how a product loses trust.
  */
 export function capabilitySummary(capabilities: ProviderCapabilities): {
@@ -69,6 +69,7 @@ export function capabilitySummary(capabilities: ProviderCapabilities): {
 
   add(capabilities.canReadComments, 'قراءة التعليقات')
   add(capabilities.canReplyToComments, 'الرد على التعليقات')
+  add(capabilities.canHideComments, 'إخفاء التعليقات')
   add(capabilities.canReadDirectMessages, 'قراءة الرسائل')
   add(capabilities.canReplyToDirectMessages, 'الرد على الرسائل')
 

@@ -127,6 +127,18 @@ export function useSetStatus() {
   })
 }
 
+export function useSetCommentVisibility() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, hidden }: { id: InteractionId; hidden: boolean }) =>
+      api.inbox.setCommentVisibility(id, hidden),
+    onSuccess: (interaction) => {
+      writeInteraction(queryClient, interaction)
+    },
+  })
+}
+
 /**
  * Sends a reply, showing it in the thread while it is in flight.
  *

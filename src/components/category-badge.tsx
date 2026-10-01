@@ -88,9 +88,11 @@ export function CategoryBadge({
  */
 export function VisibilityBadge({
   visibility,
+  label,
   className,
 }: {
   visibility: PublicVisibility
+  label?: string
   className?: string
 }) {
   if (visibility === 'public' || visibility === 'not_applicable') return null
@@ -109,7 +111,7 @@ export function VisibilityBadge({
       )}
     >
       <Icon className="size-3" aria-hidden />
-      {PUBLIC_VISIBILITY_LABELS[visibility]}
+      {label ?? PUBLIC_VISIBILITY_LABELS[visibility]}
     </span>
   )
 }

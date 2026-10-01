@@ -21,9 +21,9 @@ export interface ProviderCapabilities {
   /**
    * Whether a comment can be hidden from the public post through the API.
    *
-   * Meta exposes this on comments; the other two networks do not offer it to
-   * third-party apps. The inbox must say so rather than implying a flagged
-   * comment was taken off the post everywhere.
+   * Availability depends on the provider's API product, approved scopes and
+   * backend implementation. A local flag must not imply that a comment was
+   * hidden on the provider.
    */
   canHideComments: boolean
   /** Push/webhook delivery vs. scheduled polling. */
@@ -58,13 +58,13 @@ export const PROVIDER_CAPABILITIES: Record<SocialProvider, ProviderCapabilities>
   },
   tiktok: {
     canReadComments: true,
+    // Live TikTok DMs require the separate Business Messaging access process.
     canReadDirectMessages: false,
-    // TikTok does not expose comment replies on the access tier we target.
-    canReplyToComments: false,
+    // Mock moderation flow; live calls still require approved scopes and a backend.
+    canReplyToComments: true,
     canReplyToDirectMessages: false,
     canReadPostContext: true,
-    // No third-party comment moderation on the tier we target.
-    canHideComments: false,
+    canHideComments: true,
     supportsRealtimeUpdates: false,
   },
   x: {

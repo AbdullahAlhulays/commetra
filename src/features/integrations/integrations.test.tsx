@@ -29,9 +29,11 @@ describe('integrations page', () => {
     renderWithProviders(<IntegrationsPage />)
     await screen.findByRole('heading', { name: 'TikTok', level: 2 })
 
-    expect(within(section('TikTok')).getByText(/لا يدعم/)).toHaveTextContent(
-      /الرد على التعليقات/,
+    expect(within(section('TikTok')).getByText(/غير متاح هنا/)).toHaveTextContent(
+      /قراءة الرسائل/,
     )
+    expect(within(section('TikTok')).getByRole('link', { name: 'عرض تعليقات TikTok التجريبية' }))
+      .toHaveAttribute('href', '/app/inbox?platform=tiktok&type=comment')
   })
 
   it('flags an account whose authorisation expired and offers a reconnect', async () => {
@@ -67,8 +69,12 @@ describe('connect flow', () => {
 
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByText(/لن يتم فتح صفحة تفويض حقيقية/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/قراءة تعليقات فيديوهاته وسياقها والرد عليها وإخفاءها/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/لا يشمل هذا الطلب رسائل TikTok الخاصة/)).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'إنشاء حساب تجريبي' })).toBeInTheDocument()
     expect(within(dialog).getByText('الرد على التعليقات')).toBeInTheDocument()
-    expect(within(dialog).getAllByText('(غير مدعوم حاليًا)').length).toBeGreaterThan(0)
+    expect(within(dialog).getByText('إخفاء التعليقات')).toBeInTheDocument()
+    expect(within(dialog).getAllByText('(غير متاح في هذه النسخة)').length).toBeGreaterThan(0)
   })
 
   it('adds the account once the connection is confirmed', async () => {

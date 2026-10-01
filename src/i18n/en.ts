@@ -9,7 +9,7 @@ import type { Dictionary } from './ar'
  */
 export const en: Dictionary = {
   meta: {
-    description: 'Every comment and message from Instagram, Facebook, TikTok and X in one inbox, sorted for you automatically.',
+    description: 'TikTok comments and interactions from other channels in one inbox, sorted for you automatically.',
   },
   nav: {
     sections: 'Page links',
@@ -23,15 +23,15 @@ export const en: Dictionary = {
   },
 
   hero: {
-    title: 'Every customer comment and message in one place',
-    body: 'Every comment and message from Instagram, Facebook, TikTok and X in one inbox, sorted for you automatically.',
+    title: 'Customer comments and messages in one place',
+    body: 'TikTok comments and interactions from other channels in one inbox, sorted for you automatically.',
     secondary: 'See it in action',
   },
 
   channels: {
     title: 'Every channel in one place',
-    body: 'Your customers reach you on every platform. Comment brings all of it into one inbox for your team.',
-    strip: 'One inbox for all of these channels — your team replies from a single place.',
+    body: 'Bring interactions into one inbox for your team. The TikTok prototype reads, replies to, and hides comments on owned videos.',
+    strip: 'One inbox for these channels — your team tracks interactions in one place.',
   },
 
   categories: {
@@ -134,7 +134,7 @@ export const en: Dictionary = {
       {
         question: 'What happens to negative comments and spam?',
         answer:
-          'They are sorted automatically and hidden from the post on Instagram and Facebook, so your other followers do not see them, while they stay in your inbox to read and answer whenever you want. On TikTok and X we sort them and mark them clearly for you, because neither network allows hiding comments from outside its own app.',
+          'They are sorted automatically and hidden from the post on Instagram and Facebook. The TikTok prototype demonstrates comment replies and hiding, but these actions do not change real TikTok comments. On X, flagged comments remain visible and are labeled clearly.',
       },
       {
         question: 'Is my account data safe?',

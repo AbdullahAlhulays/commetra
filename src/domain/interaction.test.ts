@@ -54,16 +54,17 @@ describe('resolveReplyAvailability', () => {
     expect(resolveReplyAvailability(makeInteraction(), makeAccount())).toEqual({ canReply: true })
   })
 
-  it('blocks replying when the provider does not support comment replies', () => {
+  it('blocks replying when a TikTok account lacks the granted reply capability', () => {
+    const restricted = { ...PROVIDER_CAPABILITIES.tiktok, canReplyToComments: false }
     const result = resolveReplyAvailability(
-      makeInteraction({ provider: 'tiktok', capabilities: PROVIDER_CAPABILITIES.tiktok }),
-      makeAccount({ provider: 'tiktok', capabilities: PROVIDER_CAPABILITIES.tiktok }),
+      makeInteraction({ provider: 'tiktok', capabilities: restricted }),
+      makeAccount({ provider: 'tiktok', capabilities: restricted }),
     )
 
     expect(result.canReply).toBe(false)
     if (!result.canReply) {
       expect(result.kind).toBe('capability')
-      expect(result.reason).toContain('لا تتيح')
+      expect(result.reason).toContain('لا يتضمن هذا الربط')
     }
   })
 
@@ -181,6 +182,7 @@ describe('isUnreplied', () => {
 describe('resolvePublicVisibility', () => {
   const meta = PROVIDER_CAPABILITIES.instagram
   const tiktok = PROVIDER_CAPABILITIES.tiktok
+  const x = PROVIDER_CAPABILITIES.x
 
   it('leaves ordinary comments on the post', () => {
     expect(resolvePublicVisibility('sales_intent', 'comment', meta)).toBe('public')
@@ -191,14 +193,13 @@ describe('resolvePublicVisibility', () => {
   it('takes spam and complaints off the post where the network allows it', () => {
     expect(resolvePublicVisibility('spam', 'comment', meta)).toBe('hidden')
     expect(resolvePublicVisibility('negative', 'comment', meta)).toBe('hidden')
+    expect(resolvePublicVisibility('spam', 'comment', tiktok)).toBe('hidden')
   })
 
   it('never claims a comment was hidden on a network that cannot hide it', () => {
-    // The whole point of the third state: saying "hidden" here would tell a
-    // business its post is clean while the comment is still live on TikTok.
-    expect(tiktok.canHideComments).toBe(false)
-    expect(resolvePublicVisibility('spam', 'comment', tiktok)).toBe('cannot_hide')
-    expect(resolvePublicVisibility('negative', 'comment', tiktok)).toBe('cannot_hide')
+    expect(x.canHideComments).toBe(false)
+    expect(resolvePublicVisibility('spam', 'comment', x)).toBe('cannot_hide')
+    expect(resolvePublicVisibility('negative', 'comment', x)).toBe('cannot_hide')
   })
 
   it('does not apply to direct messages, which were never public', () => {

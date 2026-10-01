@@ -86,16 +86,15 @@ export function isHiddenCategory(category: InteractionCategory): boolean {
 /**
  * Whether this interaction still shows publicly under the post.
  *
- * `cannot_hide` is deliberately not folded into `public`: it means the network
- * gives us no way to take the comment down, and a business that thinks a
- * comment was hidden when it is still live has been misled by its own tool.
+ * `cannot_hide` is deliberately not folded into `public`: this connection
+ * cannot take the comment down, and the business must know it is still live.
  */
 export type PublicVisibility = 'public' | 'hidden' | 'cannot_hide' | 'not_applicable'
 
 export const PUBLIC_VISIBILITY_LABELS: Record<PublicVisibility, string> = {
   public: 'ظاهر للجميع',
   hidden: 'مخفي عن المنشور',
-  cannot_hide: 'لا تتيح المنصة إخفاءه',
+  cannot_hide: 'لم يُخفَ عن المنشور',
   not_applicable: 'رسالة خاصة',
 }
 
@@ -266,8 +265,8 @@ export function resolveReplyAvailability(
       kind: 'capability',
       reason:
         interaction.type === 'comment'
-          ? 'لا تتيح واجهة هذه المنصة الرد على التعليقات حاليًا. يمكنك الرد من تطبيق المنصة مباشرة.'
-          : 'لا تتيح واجهة هذه المنصة قراءة الرسائل المباشرة والرد عليها حاليًا.',
+          ? 'لا يتضمن هذا الربط إرسال الردود على التعليقات في هذه النسخة. يمكنك الرد من تطبيق المنصة مباشرة.'
+          : 'لا يتضمن هذا الربط قراءة الرسائل المباشرة والرد عليها في هذه النسخة.',
     }
   }
 
